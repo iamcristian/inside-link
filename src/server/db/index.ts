@@ -1,6 +1,11 @@
+import fs from "node:fs";
 import { createClient, type Client } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./schema";
+
+if (fs.existsSync(".env")) {
+  process.loadEnvFile?.(".env");
+}
 
 let globalClient: Client | null = null;
 

@@ -1,8 +1,13 @@
+import fs from "node:fs";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { ulid } from "ulidx";
 import * as schema from "./schema";
 import { hashPin } from "../crypto/pin";
+
+if (fs.existsSync(".env")) {
+  process.loadEnvFile?.(".env");
+}
 
 async function runSeed() {
   if (process.env.NODE_ENV === "production" && !process.argv.includes("--force")) {

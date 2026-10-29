@@ -4,7 +4,7 @@
  * sin interceptar el portafolio Astro ni los códigos de idioma ISO 639-1.
  */
 
-const INSIDE_LINK_ORIGIN = "https://inside-link-cris.vercel.app";
+const INSIDE_LINK_ORIGIN = "https://inside-link.vercel.app";
 
 const PORTFOLIO_RESERVED_PREFIXES = new Set([
   "es",

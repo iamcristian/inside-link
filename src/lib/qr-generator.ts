@@ -55,10 +55,12 @@ export async function generateQrCodeSvg(options: QrGenerationOptions): Promise<s
   }
 
   // Incrustamos insignia central vectorial que ocupa <18% del área (seguro bajo ECC nivel H = 30%)
+  // Diseño dev: </> en la parte superior y monograma CA en la parte inferior
   const badgeOverlay = `<g id="cristianarando-brand-badge">
-    <rect x="40%" y="40%" width="20%" height="20%" rx="4%" fill="${lightColor}" />
-    <rect x="41.5%" y="41.5%" width="17%" height="17%" rx="3.2%" fill="#09090b" stroke="#10b981" stroke-width="0.6%" />
-    <text x="50%" y="52.5%" text-anchor="middle" fill="#fafafa" font-family="ui-monospace, monospace" font-weight="700" font-size="6.5%">CA</text>
+    <rect x="39.5%" y="39.5%" width="21%" height="21%" rx="4.5%" fill="${lightColor}" />
+    <rect x="41%" y="41%" width="18%" height="18%" rx="3.6%" fill="#09090b" stroke="#10b981" stroke-width="0.7%" />
+    <text x="50%" y="48.5%" text-anchor="middle" dominant-baseline="central" fill="#10b981" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-weight="900" font-size="6.2%">&lt;/&gt;</text>
+    <text x="50%" y="54.8%" text-anchor="middle" dominant-baseline="central" fill="#fafafa" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="700" font-size="3.2%" letter-spacing="0.12em">CA</text>
   </g></svg>`;
 
   return rawSvg.replace(/<\/svg>\s*$/i, badgeOverlay);

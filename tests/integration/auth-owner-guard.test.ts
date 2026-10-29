@@ -43,14 +43,14 @@ describe("Single-Owner GitHub OAuth Guard Integration", () => {
     }
   });
 
-  it("accepts the configured ALLOWED_GITHUB_ID (12345678)", async () => {
+  it("accepts the configured ALLOWED_GITHUB_ID", async () => {
     const accountHook = testAuth.options.databaseHooks?.account?.create?.before;
     expect(accountHook).toBeDefined();
 
     if (accountHook) {
       const authorizedAccount = {
         id: "acc_owner",
-        accountId: "12345678",
+        accountId: process.env.ALLOWED_GITHUB_ID || "12345678",
         providerId: "github",
         userId: "usr_owner",
         createdAt: new Date(),

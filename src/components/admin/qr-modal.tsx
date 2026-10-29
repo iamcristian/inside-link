@@ -22,6 +22,35 @@ const COLOR_PRESETS = [
   { label: "Midnight Indigo", dark: "#1e1b4b", light: "#eef2ff" },
 ];
 
+function svgToPngDataUrl(svgString: string, size = 1024): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") {
+      return resolve("");
+    }
+    const img = new Image();
+    const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        URL.revokeObjectURL(url);
+        return reject(new Error("Canvas context 2D not available"));
+      }
+      ctx.drawImage(img, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = (e) => {
+      URL.revokeObjectURL(url);
+      reject(e);
+    };
+    img.src = url;
+  });
+}
+
 export function QrCodeModal({ open, link, onClose }: QrCodeModalProps) {
   const [darkColor, setDarkColor] = useState("#09090b");
   const [lightColor, setLightColor] = useState("#ffffff");
@@ -33,25 +62,32 @@ export function QrCodeModal({ open, link, onClose }: QrCodeModalProps) {
     if (!open || !link) return;
     let active = true;
 
-    void Promise.all([
-      generateQrCodeSvg({
-        slug: link.slug,
-        darkColor,
-        lightColor,
-        includeCenterBadge: includeBadge,
-        sizePx: 1024,
-      }),
-      generateQrCodePngDataUrl({
-        slug: link.slug,
-        darkColor,
-        lightColor,
-        sizePx: 1024,
-      }),
-    ]).then(([svg, png]) => {
-      if (!active) return;
-      setSvgMarkup(svg);
-      setPngDataUrl(png);
-    });
+    generateQrCodeSvg({
+      slug: link.slug,
+      darkColor,
+      lightColor,
+      includeCenterBadge: includeBadge,
+      sizePx: 1024,
+    })
+      .then(async (svg) => {
+        if (!active) return;
+        setSvgMarkup(svg);
+        try {
+          const png = await svgToPngDataUrl(svg, 1024);
+          if (active) setPngDataUrl(png);
+        } catch {
+          const fallbackPng = await generateQrCodePngDataUrl({
+            slug: link.slug,
+            darkColor,
+            lightColor,
+            sizePx: 1024,
+          });
+          if (active) setPngDataUrl(fallbackPng);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to generate QR code:", err);
+      });
 
     return () => {
       active = false;
@@ -124,12 +160,12 @@ export function QrCodeModal({ open, link, onClose }: QrCodeModalProps) {
 
           <div className="flex items-center justify-between pt-1">
             <span className="text-xs text-zinc-300">
-              Embed center <code className="font-mono text-emerald-400">CA</code> monogram
+              Embed center <code className="font-mono text-emerald-400">&lt;/&gt; CA</code> badge
             </span>
             <Switch
               checked={includeBadge}
               onCheckedChange={setIncludeBadge}
-              ariaLabel="Embed CA badge in QR code"
+              ariaLabel="Embed dev badge in QR code"
             />
           </div>
         </div>

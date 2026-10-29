@@ -53,6 +53,15 @@ function scheduleClickTracking(
   }
 }
 
+export const dynamic = "force-dynamic";
+
+const NO_STORE_HEADERS = {
+  "Cache-Control": "private, no-store, no-cache, must-revalidate",
+  "CDN-Cache-Control": "no-store",
+  "Vercel-CDN-Cache-Control": "no-store",
+  Vary: "User-Agent",
+};
+
 export async function handleSlugGet(
   request: NextRequest | Request,
   slug: string,
@@ -74,16 +83,11 @@ export async function handleSlugGet(
         });
       }
 
-      const cacheHeader =
-        result.status === 301 || result.status === 308
-          ? "public, max-age=300, s-maxage=3600"
-          : "private, no-store, no-cache, must-revalidate";
-
       return new Response(null, {
         status: result.status,
         headers: {
           Location: result.location,
-          "Cache-Control": cacheHeader,
+          ...NO_STORE_HEADERS,
         },
       });
     }
@@ -94,7 +98,7 @@ export async function handleSlugGet(
         status: 404,
         headers: {
           "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "private, no-store",
+          ...NO_STORE_HEADERS,
         },
       });
     }
@@ -109,7 +113,7 @@ export async function handleSlugGet(
         status: 410,
         headers: {
           "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "private, no-store",
+          ...NO_STORE_HEADERS,
         },
       });
     }
@@ -120,7 +124,7 @@ export async function handleSlugGet(
         status: 200,
         headers: {
           "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "public, max-age=300",
+          ...NO_STORE_HEADERS,
         },
       });
     }
@@ -135,7 +139,7 @@ export async function handleSlugGet(
         status: 200,
         headers: {
           "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "private, no-store, no-cache, must-revalidate",
+          ...NO_STORE_HEADERS,
         },
       });
     }
@@ -153,7 +157,7 @@ export async function handleSlugGet(
         status: 200,
         headers: {
           "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "private, no-store",
+          ...NO_STORE_HEADERS,
         },
       });
     }

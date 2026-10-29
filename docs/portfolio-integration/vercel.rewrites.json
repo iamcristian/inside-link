@@ -1,0 +1,93 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "trailingSlash": true,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https://inside-link-cris.vercel.app; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://inside-link-cris.vercel.app; style-src 'self' 'unsafe-inline' https://inside-link-cris.vercel.app; font-src 'self' data: https://inside-link-cris.vercel.app; img-src 'self' data: https:; frame-src https://giscus.app; connect-src 'self' https://vitals.vercel-insights.com https://inside-link-cris.vercel.app; base-uri 'self'; object-src 'none'; frame-ancestors 'none';"
+        }
+      ]
+    },
+    {
+      "source": "/_astro/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/en/",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/admin",
+      "destination": "https://inside-link-cris.vercel.app/admin"
+    },
+    {
+      "source": "/admin/",
+      "destination": "https://inside-link-cris.vercel.app/admin"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "https://inside-link-cris.vercel.app/admin/:path*"
+    },
+    {
+      "source": "/login",
+      "destination": "https://inside-link-cris.vercel.app/login"
+    },
+    {
+      "source": "/login/",
+      "destination": "https://inside-link-cris.vercel.app/login"
+    },
+    {
+      "source": "/links",
+      "destination": "https://inside-link-cris.vercel.app/links"
+    },
+    {
+      "source": "/links/",
+      "destination": "https://inside-link-cris.vercel.app/links"
+    },
+    {
+      "source": "/api/auth/:path*",
+      "destination": "https://inside-link-cris.vercel.app/api/auth/:path*"
+    },
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://inside-link-cris.vercel.app/api/v1/:path*"
+    },
+    {
+      "source": "/:slug((?!es$|en$|de$|ru$|ja$|projects$|uses$|cv$|blog$|bookshelf$|library$|search$|series$|search-index$|news-sitemap$|rss$|about$|contact$|_astro$|_next$|assets$|images$|fonts$|icons$|brand$)[a-z0-9][a-z0-9-_]{2,99})",
+      "destination": "https://inside-link-cris.vercel.app/:slug"
+    },
+    {
+      "source": "/:slug((?!es$|en$|de$|ru$|ja$|projects$|uses$|cv$|blog$|bookshelf$|library$|search$|series$|search-index$|news-sitemap$|rss$|about$|contact$|_astro$|_next$|assets$|images$|fonts$|icons$|brand$)[a-z0-9][a-z0-9-_]{2,99})/",
+      "destination": "https://inside-link-cris.vercel.app/:slug"
+    }
+  ]
+}

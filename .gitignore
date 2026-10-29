@@ -1,0 +1,40 @@
+# dependencies
+/node_modules
+/.pnpm-store
+
+# next.js
+/.next/
+/out/
+*.tsbuildinfo
+
+# production
+/build
+/dist
+
+# databases & local secrets
+*.db
+*.db-journal
+*.db-wal
+.env
+.env*.local
+!.env.example
+
+# debug & logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# vitest & test reports
+/coverage
+/.vitest
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

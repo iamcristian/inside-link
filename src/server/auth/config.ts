@@ -17,6 +17,12 @@ export function createAuthInstance(database: any = defaultDb) {
     }),
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
+    trustedOrigins: [
+      "https://cristianarando.dev",
+      "https://www.cristianarando.dev",
+      "https://inside-link.vercel.app",
+      "http://localhost:3000",
+    ],
     socialProviders: {
       github: {
         clientId: env.GITHUB_CLIENT_ID,

@@ -26,9 +26,16 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       setErrorMsg(null);
+      if (
+        typeof window !== "undefined" &&
+        window.location.hostname.endsWith(".vercel.app")
+      ) {
+        window.location.href = "https://www.cristianarando.dev/login/";
+        return;
+      }
       await authClient.signIn.social({
         provider: "github",
-        callbackURL: "/admin",
+        callbackURL: "/admin/",
       });
     } catch (err: unknown) {
       setIsLoading(false);

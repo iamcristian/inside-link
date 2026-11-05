@@ -52,7 +52,7 @@ export type OgPresentation = ReturnType<typeof buildOgPresentation>;
 
 export function ogRevision(presentation: OgPresentation): string {
   return createHash("sha256")
-    .update(JSON.stringify(["inside-link-card-v4", presentation]))
+    .update(JSON.stringify(["inside-link-card-v5", presentation]))
     .digest("hex")
     .slice(0, 32);
 }

@@ -2,7 +2,14 @@
 
 Fecha de revisión — 5 de noviembre de 2026.
 
-Estado — Plan propuesto para ejecución posterior. Las decisiones marcadas como puertas de validación requieren evidencia antes de avanzar. Este documento agrega trabajo al backlog existente y no declara implementadas las funciones descritas.
+Estado — En ejecución en `codex/inside-link-og-mcp`. Las puertas de validación requieren evidencia antes de avanzar.
+
+Avance al 5 de noviembre de 2026:
+
+- **P-01** verificada con SQLite en memoria: 78 pruebas, tipos y build en la línea base.
+- **OG-01 a OG-04** implementadas en `62e428a`, con 79 pruebas en la suite. Quedan pendientes la revisión visual de fixtures en Linux y el smoke del dominio frontal de OG-05.
+- **P-03** añade CI en `8643dd2`. Los controles de lint y formato cubren el código OG nuevo, su servicio HTML y la prueba de integración. La ejecución remota se comprobará cuando se publique la rama.
+- **P-02** parcial. La petición al apex devuelve 308 hacia `www.cristianarando.dev` y el frontend añade barra final. El candidato es `https://www.cristianarando.dev/api/v1/mcp/`, pendiente de comprobar discovery y POST tras el proxy en un entorno de prueba. Los paquetes `@better-auth/mcp` y `@better-auth/cimd` 1.7.18 declaran Better Auth 1.7.18 como mínimo compatible. El SDK `@modelcontextprotocol/server` consultado publica 2.4.0. Falta validar este conjunto y las versiones reales de los clientes antes de habilitar OAuth MCP.
 
 ## 1. Resultado esperado y decisiones principales
 

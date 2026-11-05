@@ -1,9 +1,13 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import React from "react";
 import { ImageResponse } from "next/og";
 import type { OgPresentation } from "./presentation";
 
 export const OG_WIDTH = 1200;
 export const OG_HEIGHT = 630;
+
+const authorAvatar = `data:image/png;base64,${readFileSync(join(process.cwd(), "src/server/og/author-avatar.png")).toString("base64")}`;
 
 export function renderOgImage(
   card: OgPresentation,
@@ -76,21 +80,15 @@ export function renderOgImage(
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div
+            <img
+              src={authorAvatar}
+              alt=""
+              width={56}
+              height={56}
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 56,
-                height: 56,
                 borderRadius: 28,
-                backgroundColor: "#303030",
-                color: "#f5f5f5",
-                fontWeight: 700,
               }}
-            >
-              CA
-            </div>
+            />
             <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
               <span style={{ color: "#f5f5f5", fontWeight: 700 }}>
                 Cristian Arando

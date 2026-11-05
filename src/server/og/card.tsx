@@ -74,8 +74,43 @@ export function renderOgImage(
             color: "#a5b7d2",
           }}
         >
-          <span>cristianarando.dev</span>
-          <span>{card.slug}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                backgroundColor: "#253044",
+                color: "#edf1f7",
+                fontWeight: 700,
+              }}
+            >
+              CA
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <span style={{ color: "#edf1f7", fontWeight: 700 }}>
+                Cristian Arando
+              </span>
+              <span style={{ fontSize: 17 }}>
+                Software &amp; Systems Engineer
+              </span>
+            </div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              justifyContent: "center",
+              gap: 3,
+            }}
+          >
+            <span>cristianarando.dev</span>
+            {card.slug && <span style={{ fontSize: 17 }}>{card.slug}</span>}
+          </div>
         </div>
       </div>
     </div>,

@@ -153,6 +153,7 @@ export function toLinkDTO(row: Link, now: Date = new Date()): LinkDTO {
     title: row.title,
     description: row.description,
     ogImageUrl: row.ogImageUrl,
+    ogMode: row.ogMode,
     category: toCategory(row.category),
     tags: safeJsonArray<string>(row.tagsJson, TagsSchema) ?? [],
     icon: row.icon,
@@ -221,6 +222,14 @@ export interface LinkFlagsPatch {
   isActive?: boolean;
   isPinned?: boolean;
   isPublic?: boolean;
+}
+
+function validateOgMode(mode: Link["ogMode"], imageUrl: string | null): void {
+  if (mode === "custom" && !imageUrl) {
+    throw new LinkServiceError("VALIDATION_ERROR", "Custom OG mode requires an image URL", {
+      ogImageUrl: ["Enter an image URL for custom mode."],
+    });
+  }
 }
 
 export function createLinkService(db: AppDatabase) {
@@ -319,6 +328,8 @@ export function createLinkService(db: AppDatabase) {
       throw new LinkServiceError("VALIDATION_ERROR", "Datos de enlace inválidos", zodDetails(parsed.error));
     }
     const data = parsed.data;
+    const ogMode = data.ogMode ?? (data.ogImageUrl ? "custom" : "auto");
+    validateOgMode(ogMode, data.ogImageUrl ?? null);
     const finalSlug = slug ?? (await generateUniqueRandomSlug());
     const now = new Date();
     const id = nextId();
@@ -334,6 +345,7 @@ export function createLinkService(db: AppDatabase) {
       title: data.title.trim(),
       description: data.description?.trim() || null,
       ogImageUrl: data.ogImageUrl ?? null,
+      ogMode,
       category: data.category,
       tagsJson: JSON.stringify(Array.from(new Set(data.tags))),
       icon: data.icon,
@@ -414,7 +426,14 @@ export function createLinkService(db: AppDatabase) {
     if (data.forwardQueryParams !== undefined) updates.forwardQueryParams = data.forwardQueryParams;
     if (data.title !== undefined) updates.title = data.title.trim();
     if (data.description !== undefined) updates.description = data.description?.trim() || null;
-    if (data.ogImageUrl !== undefined) updates.ogImageUrl = data.ogImageUrl;
+    if (data.ogMode !== undefined || data.ogImageUrl !== undefined) {
+      const imageUrl = data.ogImageUrl !== undefined ? data.ogImageUrl : existing.ogImageUrl;
+      const inferredMode = imageUrl ? "custom" : "auto";
+      const mode = data.ogMode ?? (data.ogImageUrl !== undefined ? inferredMode : existing.ogMode);
+      validateOgMode(mode, imageUrl);
+      if (data.ogImageUrl !== undefined) updates.ogImageUrl = imageUrl;
+      updates.ogMode = mode;
+    }
     if (data.category !== undefined) updates.category = data.category;
     if (data.tags !== undefined) updates.tagsJson = JSON.stringify(Array.from(new Set(data.tags)));
     if (data.icon !== undefined) updates.icon = data.icon;

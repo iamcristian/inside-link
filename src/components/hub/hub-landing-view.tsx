@@ -1,6 +1,6 @@
 import React from "react";
 import type { LinkDTO } from "@/lib/types/link-dto";
-import { escapeHtml, getCanonicalBaseUrl } from "@/server/services/og-render.service";
+import { escapeHtml, getCanonicalBaseUrl, renderOgMetaTags } from "@/server/services/og-render.service";
 
 export function renderHubLandingHtml(link: LinkDTO): string {
   const baseUrl = escapeHtml(getCanonicalBaseUrl());
@@ -45,6 +45,7 @@ export function renderHubLandingHtml(link: LinkDTO): string {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${title} — cristianarando.dev</title>
   <meta name="description" content="${description}" />
+  ${renderOgMetaTags(link)}
   <style>
     *{box-sizing:border-box}
     body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at top,#18181b 0%,#09090b 65%);color:#fafafa;font-family:system-ui,-apple-system,sans-serif;padding:24px 16px}

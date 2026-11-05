@@ -23,6 +23,7 @@ export const links = sqliteTable(
     title: text("title").notNull(),
     description: text("description"),
     ogImageUrl: text("og_image_url"),
+    ogMode: text("og_mode", { enum: ["auto", "custom", "minimal"] }).notNull().default("auto"),
     category: text("category").notNull().default("project"),
     tagsJson: text("tags_json").notNull().default("[]"),
     icon: text("icon").notNull().default("link"),

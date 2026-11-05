@@ -16,8 +16,8 @@ export function renderOgImage(
         height: "100%",
         display: "flex",
         padding: 44,
-        backgroundColor: "#101117",
-        color: "#edf1f7",
+        backgroundColor: "#101010",
+        color: "#f5f5f5",
       }}
     >
       <div
@@ -26,18 +26,18 @@ export function renderOgImage(
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          border: "1px solid #303645",
+          border: "1px solid #343434",
           borderRadius: 24,
           padding: "42px 52px",
-          backgroundColor: "#171a23",
+          backgroundColor: "#181818",
         }}
       >
         <div
           style={{
             display: "flex",
-            color: "#a5b7d2",
+            color: "#bdbdbd",
             fontSize: 22,
-            letterSpacing: 3,
+            letterSpacing: 4,
           }}
         >
           INSIDE LINK / {card.label}
@@ -47,6 +47,7 @@ export function renderOgImage(
             style={{
               fontSize: card.title.length > 44 ? 54 : 68,
               fontWeight: 700,
+              letterSpacing: -1.5,
               lineHeight: 1.08,
               lineClamp: 2,
             }}
@@ -56,7 +57,7 @@ export function renderOgImage(
           <div
             style={{
               fontSize: 29,
-              color: "#acb5c5",
+              color: "#c5c5c5",
               lineHeight: 1.25,
               lineClamp: 2,
             }}
@@ -68,10 +69,10 @@ export function renderOgImage(
           style={{
             display: "flex",
             justifyContent: "space-between",
-            borderTop: "1px solid #303645",
+            borderTop: "1px solid #343434",
             paddingTop: 22,
             fontSize: 21,
-            color: "#a5b7d2",
+            color: "#bdbdbd",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -83,15 +84,15 @@ export function renderOgImage(
                 width: 56,
                 height: 56,
                 borderRadius: 28,
-                backgroundColor: "#253044",
-                color: "#edf1f7",
+                backgroundColor: "#303030",
+                color: "#f5f5f5",
                 fontWeight: 700,
               }}
             >
               CA
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <span style={{ color: "#edf1f7", fontWeight: 700 }}>
+              <span style={{ color: "#f5f5f5", fontWeight: 700 }}>
                 Cristian Arando
               </span>
               <span style={{ fontSize: 17 }}>

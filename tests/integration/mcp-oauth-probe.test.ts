@@ -76,9 +76,15 @@ it("reads InsideLink data with a resource-bound PKCE token and enforces revocati
 
     const fetchAuth = (path: string, init?: RequestInit) => {
       const request = new Request(origin + path, init);
-      return path === "/api/auth/oauth2/token"
-        ? handleAuthPost(request, database, resource)
-        : auth.handler(request);
+      if (path !== "/api/auth/oauth2/token") return auth.handler(request);
+
+      // Vercel wraps the request before passing it to the route handler.
+      const wrappedRequest = new Proxy(request, {
+        get(target, property) {
+          return Reflect.get(target, property, target);
+        },
+      });
+      return handleAuthPost(wrappedRequest, database, resource);
     };
     vi.stubGlobal("fetch", (input: RequestInfo | URL, init?: RequestInit) => {
       const request = new Request(input, init);

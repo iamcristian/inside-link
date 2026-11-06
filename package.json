@@ -13,8 +13,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/server/db/migrate.ts",
     "db:seed": "tsx src/server/db/seed.ts",
-    "lint": "eslint src/server/og src/app/api/v1/og src/server/services/og-render.service.ts tests/integration/og-images.test.ts",
-    "format:check": "prettier --check src/server/og src/app/api/v1/og src/server/services/og-render.service.ts tests/integration/og-images.test.ts eslint.config.mjs"
+    "lint": "eslint src/server/og src/app/api/v1/og src/server/services/og-render.service.ts tests/integration/og-images.test.ts \"src/app/(admin)/login\" tests/integration/login-redirect.test.ts",
+    "format:check": "prettier --check src/server/og src/app/api/v1/og src/server/services/og-render.service.ts tests/integration/og-images.test.ts eslint.config.mjs \"src/app/(admin)/login\" tests/integration/login-redirect.test.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.15.2",

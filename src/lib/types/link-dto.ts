@@ -5,6 +5,8 @@
  */
 import type { HubLinkItem } from "../validations/link.schema";
 
+export type OgMode = "auto" | "custom" | "minimal";
+
 export type LinkType = "DIRECT" | "HUB";
 export type LinkCategory = "social" | "project" | "resource" | "personal" | "temporary";
 export type LinkStatusFilter = "all" | "active" | "inactive" | "expired" | "pinned";
@@ -22,6 +24,7 @@ export interface LinkDTO {
   title: string;
   description: string | null;
   ogImageUrl: string | null;
+  ogMode: OgMode;
   category: LinkCategory;
   tags: string[];
   icon: string;

@@ -1,4 +1,35 @@
 import type { LinkDTO } from "@/lib/types/link-dto";
+import {
+  buildOgPresentation,
+  getCanonicalBaseUrl,
+  resolveOgImage,
+} from "@/server/og/presentation";
+
+export { getCanonicalBaseUrl };
+
+export function renderOgMetaTags(link: LinkDTO): string {
+  const presentation = buildOgPresentation(link);
+  const image = resolveOgImage(link, presentation);
+  const title = escapeHtml(presentation.title);
+  const description = escapeHtml(presentation.description);
+  const url = escapeHtml(image.url);
+  const canonical = escapeHtml(link.shortUrl);
+  return `<link rel="canonical" href="${canonical}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="cristianarando.dev" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:title" content="${title}" />
+  <meta property="og:description" content="${description}" />
+  <meta property="og:url" content="${canonical}" />
+  <meta property="og:image" content="${url}" />
+  <meta property="og:image:alt" content="${title}" />
+  ${image.generated ? '<meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" />' : ""}
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${title}" />
+  <meta name="twitter:description" content="${description}" />
+  <meta name="twitter:image" content="${url}" />
+  <meta name="twitter:image:alt" content="${title}" />`;
+}
 
 export function escapeHtml(value: string): string {
   return value
@@ -9,40 +40,25 @@ export function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
-export function getCanonicalBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_CANONICAL_URL || "https://cristianarando.dev").replace(/\/+$/, "");
-}
-
 /**
  * Genera el documento HTML ligero con metadatos Open Graph y Twitter Cards
  * para crawlers de redes sociales (WhatsApp, LinkedIn, X, Discord, Slack, Telegram).
  * Jamás expone la URL de destino privada si el enlace está protegido por PIN.
  */
 export function renderOpenGraphHtml(link: LinkDTO): string {
-  const baseUrl = getCanonicalBaseUrl();
-  const rawTitle = link.hasPin
-    ? `${link.title} (Protected)`
-    : link.title;
-  const rawDescription = link.hasPin
-    ? "PIN-protected link on cristianarando.dev."
-    : link.description?.trim() ||
-      (link.type === "HUB"
-        ? `Project showcase for ${link.title} on cristianarando.dev.`
-        : `Verified short link at cristianarando.dev/${link.slug}.`);
+  const presentation = buildOgPresentation(link);
+  const title = escapeHtml(presentation.title);
+  const description = escapeHtml(presentation.description);
 
-  const canonicalShortUrl = `${baseUrl}/${link.slug}`;
-  const rawImage = link.ogImageUrl?.trim() || `${baseUrl}/brand/og-default.png`;
-
-  const title = escapeHtml(rawTitle);
-  const description = escapeHtml(rawDescription);
-  const ogUrl = escapeHtml(canonicalShortUrl);
-  const ogImage = escapeHtml(rawImage);
-
-  const canClientRedirect = !link.hasPin && link.type === "DIRECT" && Boolean(link.destinationUrl);
-  const safeDestination = canClientRedirect && link.destinationUrl ? escapeHtml(link.destinationUrl) : "";
+  const canClientRedirect =
+    !link.hasPin && link.type === "DIRECT" && Boolean(link.destinationUrl);
+  const safeDestination =
+    canClientRedirect && link.destinationUrl
+      ? escapeHtml(link.destinationUrl)
+      : "";
   const redirectScript =
     canClientRedirect && link.destinationUrl
-      ? `<script>window.location.replace(${JSON.stringify(link.destinationUrl)});</script>`
+      ? `<script>window.location.replace(${JSON.stringify(link.destinationUrl).replace(/</g, "\\u003c")});</script>`
       : "";
 
   return `<!DOCTYPE html>
@@ -52,18 +68,7 @@ export function renderOpenGraphHtml(link: LinkDTO): string {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${title}</title>
   <meta name="description" content="${description}" />
-  <link rel="canonical" href="${ogUrl}" />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="cristianarando.dev" />
-  <meta property="og:locale" content="en_US" />
-  <meta property="og:title" content="${title}" />
-  <meta property="og:description" content="${description}" />
-  <meta property="og:url" content="${ogUrl}" />
-  <meta property="og:image" content="${ogImage}" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${title}" />
-  <meta name="twitter:description" content="${description}" />
-  <meta name="twitter:image" content="${ogImage}" />
+  ${renderOgMetaTags(link)}
   ${redirectScript}
   <style>
     body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#09090b;color:#fafafa;font-family:system-ui,-apple-system,sans-serif;padding:16px}

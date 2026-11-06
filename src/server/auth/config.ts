@@ -4,7 +4,7 @@ import { db as defaultDb } from "../db";
 import * as schema from "../db/schema";
 import { env } from "@/lib/env";
 
-export function createAuthInstance(database: any = defaultDb) {
+export function createAuthInstance(database: typeof defaultDb = defaultDb) {
   return betterAuth({
     database: drizzleAdapter(database, {
       provider: "sqlite",

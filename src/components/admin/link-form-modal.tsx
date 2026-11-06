@@ -14,7 +14,7 @@ import { IconPicker } from "./icon-picker";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { classifySlug, normalizeSlug } from "@/lib/validations/slug.schema";
 import type { HubLinkItem } from "@/lib/validations/link.schema";
-import type { LinkCategory, LinkDTO, LinkType, SlugAvailability } from "@/lib/types/link-dto";
+import type { LinkCategory, LinkDTO, LinkType, OgMode, SlugAvailability } from "@/lib/types/link-dto";
 
 export interface LinkFormModalProps {
   open: boolean;
@@ -66,7 +66,11 @@ export function LinkFormModal({
   const [clearExistingPin, setClearExistingPin] = useState(false);
   const [expiresAtInput, setExpiresAtInput] = useState("");
   const [maxClicksInput, setMaxClicksInput] = useState("");
+  const [ogMode, setOgMode] = useState<OgMode>("auto");
   const [ogImageUrl, setOgImageUrl] = useState("");
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [previewError, setPreviewError] = useState("");
+  const [isPreviewing, setIsPreviewing] = useState(false);
 
   const [slugStatus, setSlugStatus] = useState<
     | { state: "idle" }
@@ -80,6 +84,8 @@ export function LinkFormModal({
 
   useEffect(() => {
     if (!open) return;
+    setPreviewUrl("");
+    setPreviewError("");
     setSubmitError(null);
     setClearExistingPin(false);
     setPinInput("");
@@ -109,11 +115,13 @@ export function LinkFormModal({
       setMaxClicksInput(
         initialLink.maxClicks !== null ? String(initialLink.maxClicks) : ""
       );
+      setOgMode(initialLink.ogMode ?? (initialLink.ogImageUrl ? "custom" : "auto"));
       setOgImageUrl(initialLink.ogImageUrl ?? "");
     } else {
       setSlugInput("");
       setTitle("");
       setDescription("");
+      setOgMode("auto");
       setType("DIRECT");
       setDestinationUrl("");
       setRedirectStatus(307);
@@ -267,7 +275,8 @@ export function LinkFormModal({
         isActive,
         isPublic,
         isPinned,
-        ogImageUrl: ogImageUrl.trim() || null,
+        ogMode,
+        ogImageUrl: ogMode === "custom" ? ogImageUrl.trim() || null : null,
         expiresAt: expiresAtInput ? new Date(expiresAtInput).toISOString() : null,
         maxClicks: maxClicksInput.trim() ? Number(maxClicksInput) : null,
       };
@@ -576,6 +585,71 @@ export function LinkFormModal({
             />
           </div>
         </div>
+
+        <fieldset className="space-y-2">
+          <legend className="text-xs font-medium text-zinc-300">Social preview</legend>
+          <select
+            aria-label="Social preview mode"
+            className="rounded-lg border border-zinc-700 bg-zinc-900 p-2 text-xs text-zinc-200"
+            value={ogMode}
+            onChange={(event) => setOgMode(event.target.value as OgMode)}
+          >
+            <option value="auto">Automatic</option>
+            <option value="custom">Custom image</option>
+            <option value="minimal">Generic card</option>
+          </select>
+          {ogMode === "custom" && (
+            <Input
+              type="url"
+              aria-label="Custom social image URL"
+              placeholder="https://example.com/social-image.png"
+              value={ogImageUrl}
+              onChange={(event) => setOgImageUrl(event.target.value)}
+              required
+            />
+          )}
+          <button
+            type="button"
+            className="block rounded border border-zinc-700 px-3 py-1.5 text-xs text-zinc-200 disabled:opacity-50"
+            disabled={isPreviewing || !title.trim()}
+            onClick={async () => {
+              setIsPreviewing(true);
+              setPreviewError("");
+              setPreviewUrl("");
+              try {
+                const hasPin = Boolean(pinInput || (initialLink?.hasPin && !clearExistingPin));
+                const response = await fetch("/api/v1/og/preview", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ title, description, slug: normalizeSlug(slugInput), category, type, ogMode, hasPin }),
+                });
+                if (!response.ok || !response.headers.get("content-type")?.startsWith("image/png")) {
+                  throw new Error("Preview unavailable");
+                }
+                const png = await response.blob();
+                const dataUrl = await new Promise<string>((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.onload = () => resolve(String(reader.result));
+                  reader.onerror = () => reject(reader.error);
+                  reader.readAsDataURL(png);
+                });
+                setPreviewUrl(dataUrl);
+              } catch {
+                setPreviewError("Could not load the generated preview.");
+              } finally {
+                setIsPreviewing(false);
+              }
+            }}
+          >
+            {isPreviewing ? "Generating…" : "Preview generated card"}
+          </button>
+          {previewUrl && <img src={previewUrl} alt="Generated social card preview" className="w-full rounded-lg" />}
+          {previewError && <p role="status" className="text-xs text-red-300">{previewError}</p>}
+          <p className="text-xs text-zinc-400">
+            Social previews can show the title and description of unlisted links. PIN-protected
+            links use a generic protected card.
+          </p>
+        </fieldset>
 
         <div>
           <label className="mb-1.5 block text-xs font-medium text-zinc-300">

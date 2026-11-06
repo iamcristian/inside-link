@@ -1,14 +1,9 @@
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { verifyOAuthQueryParams } from "@better-auth/oauth-provider";
 import { auth } from "@/server/auth/config";
-import {
-  createOwnerCheck,
-  getMcpResource,
-  MCP_ANALYTICS_SCOPE,
-  MCP_READ_SCOPE,
-} from "@/server/auth/mcp-policy";
+import { MCP_ANALYTICS_SCOPE, MCP_READ_SCOPE } from "@/server/auth/mcp-policy";
 
+import { requireMcpOwner } from "@/server/auth/mcp-session";
 import { ConsentActions } from "./consent-actions";
 
 const scopeLabels = {
@@ -17,21 +12,12 @@ const scopeLabels = {
   offline_access: "Keep this connection authorized between sessions",
 };
 
-async function requireOwner() {
-  if (!getMcpResource()) notFound();
-
-  const requestHeaders = await headers();
-  const session = await auth.api.getSession({ headers: requestHeaders });
-  if (!session || !(await createOwnerCheck()(session.user.id))) notFound();
-  return requestHeaders;
-}
-
 export default async function ConsentPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const requestHeaders = await requireOwner();
+  const { requestHeaders } = await requireMcpOwner();
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(await searchParams)) {
     for (const entry of Array.isArray(value)

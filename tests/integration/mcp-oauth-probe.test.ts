@@ -4,6 +4,8 @@ import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { makeSignature } from "better-auth/crypto";
 import { env } from "@/lib/env";
+import { disconnectMcpClient } from "@/server/auth/mcp-connections";
+import { handleAuthPost } from "@/server/auth/http";
 import { createAuthInstance } from "@/server/auth/config";
 import { createMcpPost } from "@/server/mcp/endpoint";
 import { createLinkService } from "@/server/services/link.service";
@@ -18,7 +20,7 @@ const scope = "links:read";
 const analyticsScope = "analytics:read";
 
 it("reads InsideLink data with a resource-bound PKCE token and enforces revocation", async () => {
-  const client = createClient({ url: ":memory:" });
+  const client = createClient({ url: "file::memory:?cache=shared" });
   const database = drizzle(client, { schema });
   try {
     await client.execute("PRAGMA foreign_keys = ON");
@@ -72,8 +74,12 @@ it("reads InsideLink data with a resource-bound PKCE token and enforces revocati
       .insert(schema.oauthClientResource)
       .values({ id: "client-resource", clientId, resourceId: resource });
 
-    const fetchAuth = (path: string, init?: RequestInit) =>
-      auth.handler(new Request(origin + path, init));
+    const fetchAuth = (path: string, init?: RequestInit) => {
+      const request = new Request(origin + path, init);
+      return path === "/api/auth/oauth2/token"
+        ? handleAuthPost(request, database, resource)
+        : auth.handler(request);
+    };
     vi.stubGlobal("fetch", (input: RequestInfo | URL, init?: RequestInit) => {
       const request = new Request(input, init);
       if (new URL(request.url).origin !== origin)
@@ -280,24 +286,21 @@ it("reads InsideLink data with a resource-bound PKCE token and enforces revocati
 
     const [grant] = await database.select().from(schema.oauthConsent);
     expect(grant?.userId).toBe(owner.id);
-    await auth.api.deleteOAuthConsent({
-      headers: ownerHeaders,
-      body: { id: grant!.id },
-    });
+    expect(
+      await disconnectMcpClient(database, resource, other.id, grant!.id),
+    ).toBe(false);
+    expect(
+      await disconnectMcpClient(database, resource, owner.id, grant!.id),
+    ).toBe(true);
+    expect(await database.select().from(schema.oauthConsent)).toEqual([]);
+    expect(await database.select().from(schema.oauthRefreshToken)).toEqual([]);
     expect((await call("tools/list", {}, accessToken)).status).toBe(403);
+    expect((await refresh(rotatedToken)).status).toBe(400);
+
     await database
       .insert(schema.oauthConsent)
       .values({ ...grant!, id: "new-consent" });
     expect((await call("tools/list", {}, accessToken)).status).toBe(403);
-    const revoked = await fetchAuth("/api/auth/oauth2/revoke", {
-      method: "POST",
-      body: new URLSearchParams({
-        client_id: clientId,
-        token: rotatedToken,
-        token_type_hint: "refresh_token",
-      }),
-    });
-    expect(revoked.ok, await revoked.clone().text()).toBe(true);
     expect((await refresh(rotatedToken)).status).toBe(400);
     expect((await exchangeCode()).status).toBe(400);
   } finally {

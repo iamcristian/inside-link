@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { env } from "@/lib/env";
-import { db } from "@/server/db";
+import { db, type AuthDatabase } from "@/server/db";
 import { account, oauthClient, oauthConsent } from "@/server/db/schema";
 
 export const MCP_READ_SCOPE = "links:read";
@@ -40,7 +40,7 @@ export function getMcpResource(): string | undefined {
   return new URL(MCP_PATH, issuer).href;
 }
 
-export function createOwnerCheck(database: typeof db = db) {
+export function createOwnerCheck(database: AuthDatabase = db) {
   return async (userId: string): Promise<boolean> => {
     const [ownerAccount] = await database
       .select({ id: account.id })
@@ -58,7 +58,7 @@ export function createOwnerCheck(database: typeof db = db) {
 }
 
 export async function getMcpConsents(
-  database: typeof db,
+  database: AuthDatabase,
   userId: string,
   resource: string,
 ) {
@@ -66,6 +66,7 @@ export async function getMcpConsents(
     .select({
       id: oauthConsent.id,
       clientId: oauthConsent.clientId,
+      clientName: oauthClient.name,
       resources: oauthConsent.resources,
       scopes: oauthConsent.scopes,
       disabled: oauthClient.disabled,
@@ -79,9 +80,10 @@ export async function getMcpConsents(
       ({ disabled, resources }) =>
         !disabled && storedStrings(resources).includes(resource),
     )
-    .map(({ id, clientId, scopes }) => ({
+    .map(({ id, clientId, clientName, scopes }) => ({
       id,
       clientId,
+      clientName,
       scopes: storedStrings(scopes),
     }))
     .filter(({ scopes }) => scopes.includes(MCP_READ_SCOPE));

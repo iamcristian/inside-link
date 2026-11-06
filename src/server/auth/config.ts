@@ -5,7 +5,7 @@ import { jwt } from "better-auth/plugins";
 import { cimd } from "@better-auth/cimd";
 import { fetchClientMetadataResource } from "@better-auth/cimd/node";
 import { mcp } from "@better-auth/mcp";
-import { db as defaultDb } from "../db";
+import { db as defaultDb, type AuthDatabase } from "../db";
 import * as schema from "../db/schema";
 import { env } from "@/lib/env";
 import {
@@ -18,7 +18,7 @@ import {
 } from "./mcp-policy";
 
 export function createAuthInstance(
-  database: typeof defaultDb = defaultDb,
+  database: AuthDatabase = defaultDb,
   resource = getMcpResource(),
 ) {
   const isOwner = createOwnerCheck(database);
@@ -27,7 +27,7 @@ export function createAuthInstance(
       provider: "sqlite",
       schema,
     }),
-    disabledPaths: resource ? ["/token"] : [],
+    disabledPaths: resource ? ["/token", "/oauth2/delete-consent"] : [],
     plugins: resource
       ? [
           jwt({ disableSettingJwtHeader: true }),

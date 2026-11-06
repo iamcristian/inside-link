@@ -1,22 +1,27 @@
 import { readRequestBody } from "@modelcontextprotocol/server";
 import { db } from "@/server/db";
 import { auth, createAuthInstance } from "./config";
-import { getMcpResource } from "./mcp-policy";
+import { getMcpResource, MCP_TOKEN_PATH } from "./mcp-policy";
+
+const providerTokenPath = "/api/auth/oauth2/token";
 
 export async function handleAuthPost(
   request: Request,
   database = db,
   resource = getMcpResource(),
 ) {
-  const path = new URL(request.url).pathname.replace(/\/+$/, "");
-  if (!resource || path !== "/api/auth/oauth2/token")
+  const url = new URL(request.url);
+  const path = url.pathname.replace(/\/+$/, "");
+  if (!resource || (path !== providerTokenPath && path !== MCP_TOKEN_PATH))
     return auth.handler(request);
 
   const body = await readRequestBody(request, 16 * 1024);
   if (body.tooLarge) return new Response(null, { status: 413 });
 
   // Vercel can pass a wrapped Request that the native constructor cannot copy.
-  const tokenRequest = new Request(request.url, {
+  // Resolve the public alias internally, preserving the provider's validation.
+  url.pathname = providerTokenPath;
+  const tokenRequest = new Request(url, {
     method: request.method,
     headers: request.headers,
     body: body.text,

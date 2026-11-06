@@ -8,6 +8,7 @@ export const MCP_ANALYTICS_SCOPE = "analytics:read";
 export const MCP_GRANTS_CLAIM = "insidelink_grants";
 export const MCP_PATH = "/api/v1/mcp/";
 export const MCP_JWKS_PATH = "/jwks.json";
+export const MCP_TOKEN_PATH = "/api/auth/oauth2/token.json";
 
 function storedStrings(value: unknown): string[] {
   // The provider can serialize arrays before the Drizzle JSON column does.

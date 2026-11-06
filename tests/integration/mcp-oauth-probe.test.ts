@@ -6,6 +6,7 @@ import { makeSignature } from "better-auth/crypto";
 import { env } from "@/lib/env";
 import { disconnectMcpClient } from "@/server/auth/mcp-connections";
 import { handleAuthPost } from "@/server/auth/http";
+import { handleMcpDiscovery } from "@/server/auth/discovery";
 import { createAuthInstance } from "@/server/auth/config";
 import { createMcpPost } from "@/server/mcp/endpoint";
 import { createLinkService } from "@/server/services/link.service";
@@ -76,7 +77,18 @@ it("reads InsideLink data with a resource-bound PKCE token and enforces revocati
 
     const fetchAuth = (path: string, init?: RequestInit) => {
       const request = new Request(origin + path, init);
-      if (path !== "/api/auth/oauth2/token") return auth.handler(request);
+      if (path.startsWith("/.well-known/"))
+        return handleMcpDiscovery(request, resource, auth.handler);
+      // Reproduce the portfolio's 308 without silently following it for clients.
+      if (path === "/api/auth/oauth2/token")
+        return Promise.resolve(
+          Response.json(
+            { redirect: path + "/", status: "308" },
+            { status: 308, headers: { Location: path + "/" } },
+          ),
+        );
+      if (!path.startsWith("/api/auth/oauth2/token"))
+        return auth.handler(request);
 
       // Vercel wraps the request before passing it to the route handler.
       const wrappedRequest = new Proxy(request, {
@@ -165,7 +177,11 @@ it("reads InsideLink data with a resource-bound PKCE token and enforces revocati
     const challenge = denied.headers.get("www-authenticate") ?? "";
     const metadataUrl = /resource_metadata="([^"]+)"/.exec(challenge)?.[1];
     expect(metadataUrl).toBeDefined();
-    const metadataResponse = await auth.handler(new Request(metadataUrl!));
+    const metadataResponse = await handleMcpDiscovery(
+      new Request(metadataUrl!),
+      resource,
+      auth.handler,
+    );
     expect(metadataResponse.status).toBe(200);
     expect(await metadataResponse.json()).toMatchObject({
       resource,
@@ -178,11 +194,38 @@ it("reads InsideLink data with a resource-bound PKCE token and enforces revocati
     const discoveryBody = await discovery.json();
     expect(discoveryBody).toMatchObject({
       issuer: origin + "/api/auth",
+      token_endpoint: origin + "/api/auth/oauth2/token.json",
       jwks_uri: origin + "/api/auth/jwks.json",
       code_challenge_methods_supported: ["S256"],
       client_id_metadata_document_supported: true,
     });
     expect(discoveryBody).not.toHaveProperty("registration_endpoint");
+    const tokenPath = new URL(discoveryBody.token_endpoint).pathname;
+
+    const invalidGrant = {
+      method: "POST",
+      body: new URLSearchParams({ grant_type: "invalid_probe" }),
+    };
+    const redirectResponse = await fetchAuth(
+      "/api/auth/oauth2/token",
+      invalidGrant,
+    );
+    expect(redirectResponse.status).toBe(308);
+    expect(await redirectResponse.json()).not.toHaveProperty("access_token");
+    // Previously published URLs still reach the same provider, after the proxy.
+    const legacyTokenResponse = await fetchAuth(
+      "/api/auth/oauth2/token/",
+      invalidGrant,
+    );
+    expect(legacyTokenResponse.status).toBe(400);
+    expect(await legacyTokenResponse.json()).toMatchObject({
+      error: "unsupported_grant_type",
+    });
+    const oversized = await fetchAuth(tokenPath, {
+      method: "POST",
+      body: "x".repeat(16 * 1024 + 1),
+    });
+    expect(oversized.status).toBe(413);
 
     const verifier = "test-code-verifier-that-is-long-enough-for-pkce";
     const query = new URLSearchParams({
@@ -228,22 +271,40 @@ it("reads InsideLink data with a resource-bound PKCE token and enforces revocati
     const code = redirect.searchParams.get("code");
     expect(code).toBeTruthy();
 
-    const exchangeCode = () =>
-      fetchAuth("/api/auth/oauth2/token", {
+    const exchangeCode = (codeVerifier = verifier, authorizationCode = code!) =>
+      fetchAuth(tokenPath, {
         method: "POST",
         body: new URLSearchParams({
           grant_type: "authorization_code",
           client_id: clientId,
           redirect_uri: callback,
           resource,
-          code: code!,
-          code_verifier: verifier,
+          code: authorizationCode,
+          code_verifier: codeVerifier,
         }),
       });
     const tokenResponse = await exchangeCode();
     expect(tokenResponse.status).toBe(200);
     const { access_token: accessToken, refresh_token: refreshToken } =
       await tokenResponse.json();
+    // The provider consumes a code even on a failed PKCE attempt.
+    const secondAuthorization = await fetchAuth(authorizePath, {
+      headers: ownerHeaders,
+    });
+    const secondCallback = new URL(
+      secondAuthorization.headers.get("location")!,
+      origin,
+    );
+    const secondCode = secondCallback.searchParams.get("code");
+    expect(secondCode).toBeTruthy();
+    expect(
+      (
+        await exchangeCode(
+          "incorrect-code-verifier-long-enough-for-pkce",
+          secondCode!,
+        )
+      ).status,
+    ).toBe(400);
     expect((await call("tools/list", {}, "invalid-token")).status).toBe(401);
     expect(
       (await call("tools/list", {}, accessToken, "https://other.test")).status,
@@ -309,7 +370,7 @@ it("reads InsideLink data with a resource-bound PKCE token and enforces revocati
     expect(analytics).not.toHaveProperty("queryRefs");
     expect(refreshToken).toBeTruthy();
     const refresh = (token: string, requestedScope?: string) =>
-      fetchAuth("/api/auth/oauth2/token", {
+      fetchAuth(tokenPath, {
         method: "POST",
         body: new URLSearchParams({
           grant_type: "refresh_token",

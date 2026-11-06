@@ -1,20 +1,72 @@
 import { betterAuth, APIError } from "better-auth";
+import { createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { jwt } from "better-auth/plugins";
+import { cimd } from "@better-auth/cimd";
+import { fetchClientMetadataResource } from "@better-auth/cimd/node";
+import { mcp } from "@better-auth/mcp";
 import { db as defaultDb } from "../db";
 import * as schema from "../db/schema";
 import { env } from "@/lib/env";
+import { createOwnerCheck, getMcpResource, MCP_READ_SCOPE } from "./mcp-policy";
 
-export function createAuthInstance(database: any = defaultDb) {
+export function createAuthInstance(
+  database: typeof defaultDb = defaultDb,
+  resource = getMcpResource(),
+) {
+  const isOwner = createOwnerCheck(database);
   return betterAuth({
     database: drizzleAdapter(database, {
       provider: "sqlite",
-      schema: {
-        user: schema.user,
-        session: schema.session,
-        account: schema.account,
-        verification: schema.verification,
-      },
+      schema,
     }),
+    disabledPaths: resource ? ["/token"] : [],
+    plugins: resource
+      ? [
+          jwt({ disableSettingJwtHeader: true }),
+          mcp({
+            resource,
+            loginPage: "/login/",
+            consentPage: "/admin/integrations/consent/",
+            scopes: [MCP_READ_SCOPE, "offline_access"],
+            grantTypes: ["authorization_code", "refresh_token"],
+            accessTokenExpiresIn: 600,
+            refreshTokenReuseInterval: 0,
+            clientPrivileges: () => false,
+            resourcePrivileges: () => false,
+            customAccessTokenClaims: async ({ user, resources }) => {
+              if (
+                !user ||
+                !resources?.includes(resource) ||
+                !(await isOwner(user.id))
+              ) {
+                throw new APIError("FORBIDDEN");
+              }
+              return {};
+            },
+          }),
+          cimd({
+            fetchClientMetadataResource,
+            metadataProfile: "mcp-2026-07-28",
+          }),
+        ]
+      : [],
+    hooks: {
+      before: createAuthMiddleware(async (ctx) => {
+        if (
+          !resource ||
+          ![
+            "/oauth2/authorize",
+            "/oauth2/consent",
+            "/oauth2/continue",
+          ].includes(ctx.path)
+        )
+          return;
+        const session = await getSessionFromCtx(ctx);
+        if (session && !(await isOwner(session.user.id)))
+          throw new APIError("FORBIDDEN");
+      }),
+    },
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     trustedOrigins: [
@@ -34,10 +86,12 @@ export function createAuthInstance(database: any = defaultDb) {
         create: {
           before: async (account) => {
             if (account.providerId === "github") {
-              const allowedGithubId = process.env.ALLOWED_GITHUB_ID || env.ALLOWED_GITHUB_ID;
+              const allowedGithubId =
+                process.env.ALLOWED_GITHUB_ID || env.ALLOWED_GITHUB_ID;
               if (account.accountId !== allowedGithubId) {
                 throw new APIError("FORBIDDEN", {
-                  message: "Acceso restringido exclusivamente al propietario del dominio.",
+                  message:
+                    "Acceso restringido exclusivamente al propietario del dominio.",
                 });
               }
             }
@@ -47,10 +101,15 @@ export function createAuthInstance(database: any = defaultDb) {
       user: {
         create: {
           before: async (user) => {
-            const allowedEmail = process.env.ALLOWED_GITHUB_EMAIL || env.ALLOWED_GITHUB_EMAIL;
-            if (allowedEmail && user.email.toLowerCase() !== allowedEmail.toLowerCase()) {
+            const allowedEmail =
+              process.env.ALLOWED_GITHUB_EMAIL || env.ALLOWED_GITHUB_EMAIL;
+            if (
+              allowedEmail &&
+              user.email.toLowerCase() !== allowedEmail.toLowerCase()
+            ) {
               throw new APIError("FORBIDDEN", {
-                message: "Acceso restringido: el correo no coincide con el del propietario.",
+                message:
+                  "Acceso restringido: el correo no coincide con el del propietario.",
               });
             }
           },

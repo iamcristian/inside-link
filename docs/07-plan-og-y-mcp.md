@@ -15,7 +15,11 @@ Avance al 5 de noviembre de 2026:
 
 La prueba `tests/integration/mcp-oauth-probe.test.ts` usa Better Auth 1.7.18, MCP SDK 2.4.0 y SQLite en memoria. Descubre el recurso y el issuer, intercambia un código de un solo uso mediante PKCE S256 y ejecuta una herramienta de lectura con un token ligado al recurso. Rechaza peticiones anónimas y tokens inválidos. El perfil exige `MCP-Protocol-Version`, `Mcp-Method` y `Mcp-Name` para la llamada de herramienta, además de los metadatos de protocolo por petición.
 
-El cliente de prueba está registrado previamente y usa una sesión y consentimiento de fixture. Todavía hay que verificar CIMD con un cliente real, el login GitHub del propietario, el consentimiento, la revocación y la llegada de discovery y POST por el proxy HTTPS. El experimento ejecuta el proveedor dentro del proceso de pruebas. No habilita la ruta MCP de la aplicación ni toca la base de InsideLink.
+La prueba usa el proveedor real de InsideLink con Drizzle/libSQL y la migración `0002_mcp_oauth.sql` sobre una base temporal. El cliente está registrado previamente y la sesión de prueba representa al propietario. Se verifican la redirección de invitados, el rechazo de otras cuentas, el consentimiento, la rotación de refresh tokens y la revocación explícita mediante `/oauth2/revoke`. Eliminar el registro de consentimiento por sí solo no invalida el refresh token.
+
+El proveedor queda desactivado por defecto. Las ocho tablas se agregan a la base existente mediante `pnpm db:migrate`. Para probarlo en un entorno aislado, aplicar primero la migración y activar `MCP_ENABLED=true` con `BETTER_AUTH_URL` en el origen HTTPS de ese entorno. El portafolio necesita enrutar `/.well-known/oauth-protected-resource`, su variante `/.well-known/oauth-protected-resource/api/v1/mcp` y `/.well-known/oauth-authorization-server/api/auth` a InsideLink. Las rutas `/api/auth/*` siguen atendiendo los endpoints de Better Auth.
+
+Quedan pendientes la ruta MCP con herramientas de InsideLink, la comprobación de concesiones activas en cada llamada, CIMD con clientes reales y las pruebas del login GitHub y discovery a través del proxy HTTPS.
 
 ## 1. Resultado esperado y decisiones principales
 

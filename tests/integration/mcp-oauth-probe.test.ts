@@ -1,45 +1,75 @@
 import { createHash } from "node:crypto";
-import { DatabaseSync } from "node:sqlite";
-import { cimd } from "@better-auth/cimd";
-import { fetchClientMetadataResource } from "@better-auth/cimd/node";
-import { mcp, requireMcpAuth } from "@better-auth/mcp";
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
+import { migrate } from "drizzle-orm/libsql/migrator";
+import { requireMcpAuth } from "@better-auth/mcp";
 import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
-import { betterAuth } from "better-auth";
-import { getMigrations } from "better-auth/db/migration";
-import { jwt } from "better-auth/plugins";
+import { makeSignature } from "better-auth/crypto";
+import { env } from "@/lib/env";
+import { createAuthInstance } from "@/server/auth/config";
+import * as schema from "@/server/db/schema";
 import { expect, it, vi } from "vitest";
 
-const origin = "http://localhost:3000";
+const origin = new URL(env.BETTER_AUTH_URL).origin;
 const resource = origin + "/api/v1/mcp/";
 const callback = "http://127.0.0.1:45678/callback";
 const protocolVersion = "2026-07-28";
 const scope = "links:read";
 
 it("discovers OAuth and reads a fixture with a resource-bound PKCE token", async () => {
-  const database = new DatabaseSync(":memory:");
+  const client = createClient({ url: ":memory:" });
+  const database = drizzle(client, { schema });
   try {
-    const options = {
-      database,
-      baseURL: origin,
-      secret: "isolated-mcp-test-secret-not-for-production",
-      emailAndPassword: { enabled: true },
-      disabledPaths: ["/token"],
-      plugins: [
-        jwt({ disableSettingJwtHeader: true }),
-        mcp({
-          resource,
-          loginPage: "/login",
-          consentPage: "/consent",
-          scopes: [scope],
-        }),
-        cimd({
-          fetchClientMetadataResource,
-          metadataProfile: "mcp-2026-07-28",
-        }),
-      ],
+    await client.execute("PRAGMA foreign_keys = ON");
+    await migrate(database, { migrationsFolder: "src/server/db/migrations" });
+    const auth = createAuthInstance(database, resource);
+    const ctx = await auth.$context;
+    const now = new Date();
+    const owner = {
+      id: "owner",
+      name: "Test Owner",
+      email: "owner@example.test",
+      createdAt: now,
+      updatedAt: now,
     };
-    await (await getMigrations(options)).runMigrations();
-    const auth = betterAuth(options);
+    const other = { ...owner, id: "other", email: "other@example.test" };
+    await database.insert(schema.user).values([owner, other]);
+    await database.insert(schema.account).values({
+      id: "owner-github",
+      userId: owner.id,
+      accountId: env.ALLOWED_GITHUB_ID,
+      providerId: "github",
+      createdAt: now,
+      updatedAt: now,
+    });
+    const sessionHeaders = async (userId: string) => {
+      const session = await ctx.internalAdapter.createSession(userId);
+      const signature = await makeSignature(session.token, ctx.secret);
+      return new Headers({
+        Cookie:
+          ctx.authCookies.sessionToken.name +
+          "=" +
+          session.token +
+          "." +
+          signature,
+      });
+    };
+    const ownerHeaders = await sessionHeaders(owner.id);
+    const otherHeaders = await sessionHeaders(other.id);
+    const clientId = "test-mcp-client";
+    await database.insert(schema.oauthClient).values({
+      id: "test-client",
+      clientId,
+      scopes: [scope, "offline_access"],
+      redirectUris: [callback],
+      tokenEndpointAuthMethod: "none",
+      applicationType: "native",
+      requirePKCE: true,
+      grantTypes: ["authorization_code", "refresh_token"],
+    });
+    await database
+      .insert(schema.oauthClientResource)
+      .values({ id: "client-resource", clientId, resourceId: resource });
 
     const fetchAuth = (path: string, init?: RequestInit) =>
       auth.handler(new Request(origin + path, init));
@@ -125,54 +155,45 @@ it("discovers OAuth and reads a fixture with a resource-bound PKCE token", async
     });
     expect(discoveryBody).not.toHaveProperty("registration_endpoint");
 
-    const signUp = await auth.api.signUpEmail({
-      asResponse: true,
-      body: {
-        email: "owner@example.test",
-        name: "Test owner",
-        password: "fixture-password",
-      },
-    });
-    expect(signUp.ok).toBe(true);
-    const sessionCookie = signUp.headers
-      .getSetCookie()
-      .find((cookie) => cookie.includes("session_token="))
-      ?.split(";")[0];
-    expect(sessionCookie).toBeDefined();
-
-    const registered = await auth.api.adminCreateOAuthClient({
-      headers: new Headers({ Cookie: sessionCookie! }),
-      body: {
-        redirect_uris: [callback],
-        token_endpoint_auth_method: "none",
-        application_type: "native",
-        scope,
-        resources: [resource],
-        require_pkce: true,
-        skip_consent: true,
-      },
-    });
     const verifier = "test-code-verifier-that-is-long-enough-for-pkce";
     const query = new URLSearchParams({
-      client_id: registered.client_id,
+      client_id: clientId,
       redirect_uri: callback,
       response_type: "code",
-      scope,
+      scope: scope + " offline_access",
       state: "test-state",
       resource,
       code_challenge_method: "S256",
       code_challenge: createHash("sha256").update(verifier).digest("base64url"),
     });
-    const authorization = await fetchAuth(
-      "/api/auth/oauth2/authorize?" + query,
-      {
-        headers: { Cookie: sessionCookie! },
-      },
+    const authorizePath = "/api/auth/oauth2/authorize?" + query;
+    const guest = await fetchAuth(authorizePath);
+    expect(new URL(guest.headers.get("location")!, origin).pathname).toBe(
+      "/login/",
     );
-    const redirect = new URL(
-      authorization.headers.get("location") ?? "/",
-      origin,
-    );
+    expect(
+      (await fetchAuth(authorizePath, { headers: otherHeaders })).status,
+    ).toBe(403);
+    const authorization = await fetchAuth(authorizePath, {
+      headers: ownerHeaders,
+    });
+    const consentPage = new URL(authorization.headers.get("location")!, origin);
+    expect(consentPage.pathname).toBe("/admin/integrations/consent/");
+    const consentResponse = await fetchAuth("/api/auth/oauth2/consent", {
+      method: "POST",
+      headers: new Headers({
+        Cookie: ownerHeaders.get("cookie")!,
+        Origin: origin,
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify({
+        accept: true,
+        oauth_query: consentPage.search.slice(1),
+      }),
+    });
+    expect(consentResponse.ok, await consentResponse.clone().text()).toBe(true);
+    const consent = await consentResponse.json();
+    const redirect = new URL(consent.url, origin);
     expect(redirect.origin + redirect.pathname).toBe(callback);
     expect(redirect.searchParams.get("state")).toBe("test-state");
     const code = redirect.searchParams.get("code");
@@ -183,7 +204,7 @@ it("discovers OAuth and reads a fixture with a resource-bound PKCE token", async
         method: "POST",
         body: new URLSearchParams({
           grant_type: "authorization_code",
-          client_id: registered.client_id,
+          client_id: clientId,
           redirect_uri: callback,
           resource,
           code: code!,
@@ -192,8 +213,8 @@ it("discovers OAuth and reads a fixture with a resource-bound PKCE token", async
       });
     const tokenResponse = await exchangeCode();
     expect(tokenResponse.status).toBe(200);
-    const { access_token: accessToken } = await tokenResponse.json();
-    expect((await exchangeCode()).status).toBe(400);
+    const { access_token: accessToken, refresh_token: refreshToken } =
+      await tokenResponse.json();
     expect((await call("tools/list", {}, "invalid-token")).status).toBe(401);
     const response = await call(
       "tools/call",
@@ -202,8 +223,38 @@ it("discovers OAuth and reads a fixture with a resource-bound PKCE token", async
     );
     expect(response.status, await response.clone().text()).toBe(200);
     expect(await response.text()).toContain("https://example.test/fixture");
+    expect(refreshToken).toBeTruthy();
+    const refresh = (token: string) =>
+      fetchAuth("/api/auth/oauth2/token", {
+        method: "POST",
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          client_id: clientId,
+          resource,
+          refresh_token: token,
+        }),
+      });
+    const refreshed = await refresh(refreshToken);
+    expect(refreshed.status, await refreshed.clone().text()).toBe(200);
+    const rotatedToken = (await refreshed.json()).refresh_token;
+    expect(rotatedToken).toBeTruthy();
+    expect(rotatedToken).not.toBe(refreshToken);
+
+    const [grant] = await database.select().from(schema.oauthConsent);
+    expect(grant?.userId).toBe(owner.id);
+    const revoked = await fetchAuth("/api/auth/oauth2/revoke", {
+      method: "POST",
+      body: new URLSearchParams({
+        client_id: clientId,
+        token: rotatedToken,
+        token_type_hint: "refresh_token",
+      }),
+    });
+    expect(revoked.ok, await revoked.clone().text()).toBe(true);
+    expect((await refresh(rotatedToken)).status).toBe(400);
+    expect((await exchangeCode()).status).toBe(400);
   } finally {
     vi.unstubAllGlobals();
-    database.close();
+    client.close();
   }
 });

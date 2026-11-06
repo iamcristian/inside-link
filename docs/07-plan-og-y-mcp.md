@@ -19,7 +19,13 @@ La prueba usa el proveedor real de InsideLink con Drizzle/libSQL y la migración
 
 El proveedor queda desactivado por defecto. Las ocho tablas se agregan a la base existente mediante `pnpm db:migrate`. Para probarlo en un entorno aislado, aplicar primero la migración y activar `MCP_ENABLED=true` con `BETTER_AUTH_URL` en el origen HTTPS de ese entorno. El portafolio necesita enrutar `/.well-known/oauth-protected-resource`, su variante `/.well-known/oauth-protected-resource/api/v1/mcp` y `/.well-known/oauth-authorization-server/api/auth` a InsideLink. Las rutas `/api/auth/*` siguen atendiendo los endpoints de Better Auth.
 
-Quedan pendientes la ruta MCP con herramientas de InsideLink, la comprobación de concesiones activas en cada llamada, CIMD con clientes reales y las pruebas del login GitHub y discovery a través del proxy HTTPS.
+### M-03 · Lectura local
+
+`POST /api/v1/mcp/` registra `list_links`, `get_link`, `check_slug`, `get_link_og` y `get_link_analytics`. Las herramientas usan los servicios existentes y la misma base libSQL. El token y la concesión deben incluir `links:read`. Para analítica ambos deben incluir también `analytics:read`. La ruta valida el origen cuando el cliente lo envía, limita el cuerpo a 16 KiB y marca las respuestas como `no-store`.
+
+Cada llamada comprueba que el usuario siga vinculado al GitHub del propietario y que el ID de una concesión activa para ese cliente esté incluido en el token firmado. Eliminar la concesión corta el acceso de los JWT anteriores incluso si el usuario vuelve a consentir. La revocación de refresh tokens sigue siendo explícita. El panel de desconexión deberá retirar la concesión y la familia de refresh tokens antes de habilitar MCP en producción.
+
+La prueba de integración ejecuta las cinco herramientas contra registros temporales, verifica la separación de permisos y prueba un token emitido antes de retirar y volver a conceder el acceso. Quedan pendientes CIMD con clientes reales y las pruebas del login GitHub y discovery a través del proxy HTTPS. El número de versión editorial se añadirá con M-04.
 
 ## 1. Resultado esperado y decisiones principales
 

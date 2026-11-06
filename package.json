@@ -13,8 +13,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/server/db/migrate.ts",
     "db:seed": "tsx src/server/db/seed.ts",
-    "lint": "eslint src/server/og src/app/api/v1/og src/server/services/og-render.service.ts tests/integration/og-images.test.ts tests/integration/mcp-oauth-probe.test.ts",
-    "format:check": "prettier --check src/server/og src/app/api/v1/og src/server/services/og-render.service.ts tests/integration/og-images.test.ts tests/integration/mcp-oauth-probe.test.ts docs/07-plan-og-y-mcp.md eslint.config.mjs"
+    "lint": "eslint src/server/mcp src/app/api/v1/mcp src/server/og src/app/api/v1/og src/server/services/og-render.service.ts tests/integration/og-images.test.ts tests/integration/mcp-oauth-probe.test.ts",
+    "format:check": "prettier --check src/server/mcp src/app/api/v1/mcp src/server/og src/app/api/v1/og src/server/services/og-render.service.ts tests/integration/og-images.test.ts tests/integration/mcp-oauth-probe.test.ts docs/07-plan-og-y-mcp.md eslint.config.mjs"
   },
   "dependencies": {
     "@better-auth/cimd": "1.7.18",

@@ -8,7 +8,14 @@ import { mcp } from "@better-auth/mcp";
 import { db as defaultDb } from "../db";
 import * as schema from "../db/schema";
 import { env } from "@/lib/env";
-import { createOwnerCheck, getMcpResource, MCP_READ_SCOPE } from "./mcp-policy";
+import {
+  createOwnerCheck,
+  getMcpConsents,
+  getMcpResource,
+  MCP_ANALYTICS_SCOPE,
+  MCP_GRANTS_CLAIM,
+  MCP_READ_SCOPE,
+} from "./mcp-policy";
 
 export function createAuthInstance(
   database: typeof defaultDb = defaultDb,
@@ -28,7 +35,7 @@ export function createAuthInstance(
             resource,
             loginPage: "/login/",
             consentPage: "/admin/integrations/consent/",
-            scopes: [MCP_READ_SCOPE, "offline_access"],
+            scopes: [MCP_READ_SCOPE, MCP_ANALYTICS_SCOPE, "offline_access"],
             grantTypes: ["authorization_code", "refresh_token"],
             accessTokenExpiresIn: 600,
             refreshTokenReuseInterval: 0,
@@ -42,7 +49,9 @@ export function createAuthInstance(
               ) {
                 throw new APIError("FORBIDDEN");
               }
-              return {};
+              const grants = await getMcpConsents(database, user.id, resource);
+              if (grants.length === 0) throw new APIError("FORBIDDEN");
+              return { [MCP_GRANTS_CLAIM]: grants.map(({ id }) => id) };
             },
           }),
           cimd({

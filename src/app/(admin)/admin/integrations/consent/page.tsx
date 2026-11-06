@@ -5,13 +5,15 @@ import { auth } from "@/server/auth/config";
 import {
   createOwnerCheck,
   getMcpResource,
+  MCP_ANALYTICS_SCOPE,
   MCP_READ_SCOPE,
 } from "@/server/auth/mcp-policy";
 
 import { ConsentActions } from "./consent-actions";
 
 const scopeLabels = {
-  [MCP_READ_SCOPE]: "Read link metadata in InsideLink",
+  [MCP_READ_SCOPE]: "Read link metadata and destinations in InsideLink",
+  [MCP_ANALYTICS_SCOPE]: "Read aggregate click statistics",
   offline_access: "Keep this connection authorized between sessions",
 };
 

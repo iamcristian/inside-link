@@ -2,11 +2,11 @@ import { createHash } from "node:crypto";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
-import { requireMcpAuth } from "@better-auth/mcp";
-import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import { makeSignature } from "better-auth/crypto";
 import { env } from "@/lib/env";
 import { createAuthInstance } from "@/server/auth/config";
+import { createMcpPost } from "@/server/mcp/endpoint";
+import { createLinkService } from "@/server/services/link.service";
 import * as schema from "@/server/db/schema";
 import { expect, it, vi } from "vitest";
 
@@ -15,8 +15,9 @@ const resource = origin + "/api/v1/mcp/";
 const callback = "http://127.0.0.1:45678/callback";
 const protocolVersion = "2026-07-28";
 const scope = "links:read";
+const analyticsScope = "analytics:read";
 
-it("discovers OAuth and reads a fixture with a resource-bound PKCE token", async () => {
+it("reads InsideLink data with a resource-bound PKCE token and enforces revocation", async () => {
   const client = createClient({ url: ":memory:" });
   const database = drizzle(client, { schema });
   try {
@@ -60,7 +61,7 @@ it("discovers OAuth and reads a fixture with a resource-bound PKCE token", async
     await database.insert(schema.oauthClient).values({
       id: "test-client",
       clientId,
-      scopes: [scope, "offline_access"],
+      scopes: [scope, analyticsScope, "offline_access"],
       redirectUris: [callback],
       tokenEndpointAuthMethod: "none",
       applicationType: "native",
@@ -80,37 +81,25 @@ it("discovers OAuth and reads a fixture with a resource-bound PKCE token", async
       return auth.handler(request);
     });
 
-    const server = createMcpHandler(
-      () => {
-        const instance = new McpServer({
-          name: "insidelink-probe",
-          version: "0.1.0",
-        });
-        instance.registerTool(
-          "read_fixture",
-          { description: "Read a local test link" },
-          async () => ({
-            content: [{ type: "text", text: "https://example.test/fixture" }],
-          }),
-        );
-        return instance;
-      },
-      { legacy: "reject" },
-    );
-    const post = requireMcpAuth(auth, (request) => server.fetch(request), {
-      resource,
-      requiredScopes: [scope],
+    const post = createMcpPost(resource, auth, database);
+    const link = await createLinkService(database).createLink({
+      slug: "mcp-fixture",
+      title: "Private fixture",
+      destinationUrl: "https://example.test/fixture",
+      pin: "1234",
     });
 
     const call = (
       method: string,
       params: { name?: string; arguments?: object },
       token?: string,
+      requestOrigin?: string,
     ) =>
       post(
         new Request(resource, {
           method: "POST",
           headers: {
+            ...(requestOrigin ? { Origin: requestOrigin } : {}),
             Accept: "application/json, text/event-stream",
             "Content-Type": "application/json",
             "MCP-Protocol-Version": protocolVersion,
@@ -160,7 +149,7 @@ it("discovers OAuth and reads a fixture with a resource-bound PKCE token", async
       client_id: clientId,
       redirect_uri: callback,
       response_type: "code",
-      scope: scope + " offline_access",
+      scope: [scope, analyticsScope, "offline_access"].join(" "),
       state: "test-state",
       resource,
       code_challenge_method: "S256",
@@ -216,15 +205,53 @@ it("discovers OAuth and reads a fixture with a resource-bound PKCE token", async
     const { access_token: accessToken, refresh_token: refreshToken } =
       await tokenResponse.json();
     expect((await call("tools/list", {}, "invalid-token")).status).toBe(401);
-    const response = await call(
-      "tools/call",
-      { name: "read_fixture", arguments: {} },
-      accessToken,
-    );
-    expect(response.status, await response.clone().text()).toBe(200);
-    expect(await response.text()).toContain("https://example.test/fixture");
+    expect(
+      (await call("tools/list", {}, accessToken, "https://other.test")).status,
+    ).toBe(403);
+    const toolsResponse = await call("tools/list", {}, accessToken);
+    expect(toolsResponse.status).toBe(200);
+    expect(toolsResponse.headers.get("cache-control")).toBe("no-store");
+    const tools = (await toolsResponse.json()).result.tools;
+    expect(tools.map(({ name }: { name: string }) => name).sort()).toEqual([
+      "check_slug",
+      "get_link",
+      "get_link_analytics",
+      "get_link_og",
+      "list_links",
+    ]);
+
+    const read = (name: string, args: object) =>
+      call("tools/call", { name, arguments: args }, accessToken);
+    const detail = await read("get_link", { id: link.id });
+    expect(detail.status).toBe(200);
+    const details = (await detail.json()).result.structuredContent;
+    expect(details).toMatchObject({
+      destinationUrl: "https://example.test/fixture",
+      hasPin: true,
+    });
+    expect(details).not.toHaveProperty("passwordHash");
+
+    const page = (await (await read("list_links", { limit: 1 })).json()).result
+      .structuredContent;
+    expect(page.items[0]).toMatchObject({ id: link.id, slug: link.slug });
+    expect(page.items[0]).not.toHaveProperty("destinationUrl");
+    const slug = (await (await read("check_slug", { slug: link.slug })).json())
+      .result.structuredContent;
+    expect(slug).toMatchObject({ available: false });
+    const og = (await (await read("get_link_og", { id: link.id })).json())
+      .result.structuredContent;
+    expect(og).toMatchObject({ mode: "protected", width: 1200, height: 630 });
+    const analytics = (
+      await (await read("get_link_analytics", { id: link.id })).json()
+    ).result.structuredContent;
+    expect(analytics).toMatchObject({
+      id: link.id,
+      period: "30d",
+      allTimeClicks: 0,
+    });
+    expect(analytics).not.toHaveProperty("queryRefs");
     expect(refreshToken).toBeTruthy();
-    const refresh = (token: string) =>
+    const refresh = (token: string, requestedScope?: string) =>
       fetchAuth("/api/auth/oauth2/token", {
         method: "POST",
         body: new URLSearchParams({
@@ -232,16 +259,36 @@ it("discovers OAuth and reads a fixture with a resource-bound PKCE token", async
           client_id: clientId,
           resource,
           refresh_token: token,
+          ...(requestedScope ? { scope: requestedScope } : {}),
         }),
       });
-    const refreshed = await refresh(refreshToken);
+    const refreshed = await refresh(refreshToken, scope + " offline_access");
     expect(refreshed.status, await refreshed.clone().text()).toBe(200);
-    const rotatedToken = (await refreshed.json()).refresh_token;
+    const { refresh_token: rotatedToken, access_token: readOnlyToken } =
+      await refreshed.json();
     expect(rotatedToken).toBeTruthy();
     expect(rotatedToken).not.toBe(refreshToken);
+    const limited = await call(
+      "tools/call",
+      { name: "get_link_analytics", arguments: { id: link.id } },
+      readOnlyToken,
+    );
+    expect(limited.status).toBe(403);
+    expect(limited.headers.get("www-authenticate")).toContain(
+      "insufficient_scope",
+    );
 
     const [grant] = await database.select().from(schema.oauthConsent);
     expect(grant?.userId).toBe(owner.id);
+    await auth.api.deleteOAuthConsent({
+      headers: ownerHeaders,
+      body: { id: grant!.id },
+    });
+    expect((await call("tools/list", {}, accessToken)).status).toBe(403);
+    await database
+      .insert(schema.oauthConsent)
+      .values({ ...grant!, id: "new-consent" });
+    expect((await call("tools/list", {}, accessToken)).status).toBe(403);
     const revoked = await fetchAuth("/api/auth/oauth2/revoke", {
       method: "POST",
       body: new URLSearchParams({

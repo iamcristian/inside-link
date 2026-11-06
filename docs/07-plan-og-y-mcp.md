@@ -11,6 +11,12 @@ Avance al 5 de noviembre de 2026:
 - **P-03** añade CI en `8643dd2`. Los controles de lint y formato cubren el código OG nuevo, su servicio HTML y la prueba de integración. La ejecución remota se comprobará cuando se publique la rama.
 - **P-02** parcial. La petición al apex devuelve 308 hacia `www.cristianarando.dev` y el frontend añade barra final. El candidato es `https://www.cristianarando.dev/api/v1/mcp/`, pendiente de comprobar discovery y POST tras el proxy en un entorno de prueba. Los paquetes `@better-auth/mcp` y `@better-auth/cimd` 1.7.18 declaran Better Auth 1.7.18 como mínimo compatible. El SDK `@modelcontextprotocol/server` consultado publica 2.4.0. Falta validar este conjunto y las versiones reales de los clientes antes de habilitar OAuth MCP.
 
+### Evidencia local de P-02
+
+La prueba `tests/integration/mcp-oauth-probe.test.ts` usa Better Auth 1.7.18, MCP SDK 2.4.0 y SQLite en memoria. Descubre el recurso y el issuer, intercambia un código de un solo uso mediante PKCE S256 y ejecuta una herramienta de lectura con un token ligado al recurso. Rechaza peticiones anónimas y tokens inválidos. El perfil exige `MCP-Protocol-Version`, `Mcp-Method` y `Mcp-Name` para la llamada de herramienta, además de los metadatos de protocolo por petición.
+
+El cliente de prueba está registrado previamente y usa una sesión y consentimiento de fixture. Todavía hay que verificar CIMD con un cliente real, el login GitHub del propietario, el consentimiento, la revocación y la llegada de discovery y POST por el proxy HTTPS. El experimento ejecuta el proveedor dentro del proceso de pruebas. No habilita la ruta MCP de la aplicación ni toca la base de InsideLink.
+
 ## 1. Resultado esperado y decisiones principales
 
 InsideLink debe producir automáticamente una tarjeta social por enlace y permitir que el propietario consulte y gestione enlaces desde clientes MCP autenticados. La implementación se divide en entregas pequeñas con contratos, pruebas y reversión independientes.

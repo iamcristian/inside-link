@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import { isReservedSlug } from "../constants/reserved-slugs";
 
 export function normalizeSlug(input: string): string {

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import { SlugSchema } from "./slug.schema";
 
 export const SafeUrlSchema = z

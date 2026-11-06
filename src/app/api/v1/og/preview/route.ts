@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import { LinkCategorySchema } from "@/lib/validations/link.schema";
 import { assertAdminApiSession } from "@/server/auth/session";
 import { buildOgPresentation } from "@/server/og/presentation";

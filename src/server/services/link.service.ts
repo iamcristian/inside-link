@@ -2,7 +2,7 @@ import { randomInt } from "node:crypto";
 import { and, desc, eq, sql, type SQL } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { monotonicFactory } from "ulidx";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import * as schema from "../db/schema";
 import { links, type Link, type NewLink } from "../db/schema";

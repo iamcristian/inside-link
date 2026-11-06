@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 
 const serverSchema = z.object({
   TURSO_DATABASE_URL: z.string().min(1, "TURSO_DATABASE_URL es requerida"),

@@ -14,6 +14,7 @@ import {
   getMcpResource,
   MCP_ANALYTICS_SCOPE,
   MCP_GRANTS_CLAIM,
+  MCP_JWKS_PATH,
   MCP_READ_SCOPE,
 } from "./mcp-policy";
 
@@ -30,7 +31,10 @@ export function createAuthInstance(
     disabledPaths: resource ? ["/token", "/oauth2/delete-consent"] : [],
     plugins: resource
       ? [
-          jwt({ disableSettingJwtHeader: true }),
+          jwt({
+            disableSettingJwtHeader: true,
+            jwks: { jwksPath: MCP_JWKS_PATH },
+          }),
           mcp({
             resource,
             loginPage: "/login/",

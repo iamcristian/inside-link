@@ -46,6 +46,30 @@
   ],
   "rewrites": [
     {
+      "source": "/.well-known/oauth-protected-resource",
+      "destination": "https://inside-link.vercel.app/.well-known/oauth-protected-resource"
+    },
+    {
+      "source": "/.well-known/oauth-protected-resource/",
+      "destination": "https://inside-link.vercel.app/.well-known/oauth-protected-resource"
+    },
+    {
+      "source": "/.well-known/oauth-protected-resource/api/v1/mcp",
+      "destination": "https://inside-link.vercel.app/.well-known/oauth-protected-resource/api/v1/mcp"
+    },
+    {
+      "source": "/.well-known/oauth-protected-resource/api/v1/mcp/",
+      "destination": "https://inside-link.vercel.app/.well-known/oauth-protected-resource/api/v1/mcp"
+    },
+    {
+      "source": "/.well-known/oauth-authorization-server/api/auth",
+      "destination": "https://inside-link.vercel.app/.well-known/oauth-authorization-server/api/auth"
+    },
+    {
+      "source": "/.well-known/oauth-authorization-server/api/auth/",
+      "destination": "https://inside-link.vercel.app/.well-known/oauth-authorization-server/api/auth"
+    },
+    {
       "source": "/admin",
       "destination": "https://inside-link.vercel.app/admin"
     },

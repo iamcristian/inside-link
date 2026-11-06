@@ -1,6 +1,7 @@
 import React from "react";
 import { BarChart3, ExternalLink, Link2, ShieldCheck } from "lucide-react";
 import { requireAdminSession } from "@/server/auth/session";
+import { getMcpResource } from "@/server/auth/mcp-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -56,6 +57,14 @@ export default async function AdminLayout({
           </div>
 
           <div className="flex items-center gap-2 text-xs text-zinc-400">
+            {getMcpResource() && (
+              <a
+                href="/admin/integrations/"
+                className="rounded-lg px-2 py-1 hover:bg-zinc-900 hover:text-white"
+              >
+                Integrations
+              </a>
+            )}
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
             <span className="hidden sm:inline">{sessionData.user.email}</span>
           </div>

@@ -28,4 +28,7 @@ export function createDb(client: Client = getLibsqlClient()) {
 }
 
 export const db = createDb();
+export type AuthDatabase =
+  | typeof db
+  | Parameters<Parameters<typeof db.transaction>[0]>[0];
 export { schema };

@@ -87,6 +87,13 @@ describe("T-022: Coexistencia con Portafolio cristianarando.dev y Reglas de Rewr
     }
   });
 
+  it("routes the MCP discovery paths and leaves other well-known URLs alone", () => {
+    expect(matchesPortfolioRewrite("/.well-known/oauth-protected-resource")).toBe(true);
+    expect(matchesPortfolioRewrite("/.well-known/oauth-protected-resource/api/v1/mcp/")).toBe(true);
+    expect(matchesPortfolioRewrite("/.well-known/oauth-authorization-server/api/auth/")).toBe(true);
+    expect(matchesPortfolioRewrite("/.well-known/security.txt")).toBe(false);
+  });
+
   it("detecta dominios técnicos *.vercel.app para inyectar X-Robots-Tag: noindex, nofollow", () => {
     expect(isTechnicalPreviewHost("inside-link-cris.vercel.app")).toBe(true);
     expect(isTechnicalPreviewHost("inside-link-git-main.vercel.app:443")).toBe(true);

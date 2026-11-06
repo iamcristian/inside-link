@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { isMcpDiscoveryPath } from "@/lib/mcp-discovery";
 
 /**
  * Expresión regular oficial usada en `vercel.rewrites.json` para reenviar únicamente
@@ -9,6 +10,7 @@ export const PORTFOLIO_SLUG_REWRITE_REGEX =
 
 export function matchesPortfolioRewrite(pathname: string): boolean {
   if (
+    isMcpDiscoveryPath(pathname) ||
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
     pathname === "/login" ||

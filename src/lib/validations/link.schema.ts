@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import { SlugSchema } from "./slug.schema";
 
 export const SafeUrlSchema = z
@@ -50,6 +50,7 @@ export const BaseLinkSchema = z.object({
   title: z.string().min(1, "El título es requerido").max(150),
   description: z.string().max(500).optional().nullable(),
   ogImageUrl: SafeUrlSchema.optional().nullable(),
+  ogMode: z.enum(["auto", "custom", "minimal"]).optional(),
   category: LinkCategorySchema.default("project"),
   tags: z
     .array(

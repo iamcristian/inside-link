@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import { verifyPin } from "@/server/crypto/pin";
 import {

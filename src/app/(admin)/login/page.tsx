@@ -28,7 +28,8 @@ export default function LoginPage() {
       setErrorMsg(null);
       if (
         typeof window !== "undefined" &&
-        window.location.hostname.endsWith(".vercel.app")
+        window.location.hostname.endsWith(".vercel.app") &&
+        !new URLSearchParams(window.location.search).has("sig")
       ) {
         window.location.href = "https://www.cristianarando.dev/login/";
         return;

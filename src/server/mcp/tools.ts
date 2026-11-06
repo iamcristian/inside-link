@@ -189,6 +189,6 @@ export function createReadTools(
 
       return server;
     },
-    { legacy: "reject", maxRequestBodySize: 16 * 1024, maxSubscriptions: 0 },
+    { legacy: "stateless", maxRequestBodySize: 16 * 1024, maxSubscriptions: 0 },
   );
 }

@@ -88,8 +88,11 @@ it("reads InsideLink data with a resource-bound PKCE token and enforces revocati
     };
     vi.stubGlobal("fetch", (input: RequestInfo | URL, init?: RequestInit) => {
       const request = new Request(input, init);
-      if (new URL(request.url).origin !== origin)
-        throw new Error("Unexpected external request");
+      const url = new URL(request.url);
+      if (url.origin !== origin) throw new Error("Unexpected external request");
+      if (url.pathname === "/api/auth/jwks") {
+        return Response.redirect(origin + "/api/auth/jwks/", 308);
+      }
       return auth.handler(request);
     });
 
@@ -133,6 +136,30 @@ it("reads InsideLink data with a resource-bound PKCE token and enforces revocati
           }),
         }),
       );
+    const callLegacy = (method: string, params: object, token: string) =>
+      post(
+        new Request(resource, {
+          method: "POST",
+          headers: {
+            Accept: "application/json, text/event-stream",
+            "Content-Type": "application/json",
+            "MCP-Protocol-Version": "2025-11-25",
+            Authorization: "Bearer " + token,
+          },
+          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+        }),
+      );
+    const legacyResult = async (response: Response) => {
+      expect(response.status).toBe(200);
+      if (!response.headers.get("content-type")?.includes("text/event-stream"))
+        return (await response.json()).result;
+      const event = (await response.text())
+        .split("\n")
+        .find((line) => line.startsWith("data: {"));
+      expect(event).toBeDefined();
+      return JSON.parse(event!.slice("data: ".length)).result;
+    };
+
     const denied = await call("tools/list", {});
     expect(denied.status).toBe(401);
     const challenge = denied.headers.get("www-authenticate") ?? "";
@@ -151,6 +178,7 @@ it("reads InsideLink data with a resource-bound PKCE token and enforces revocati
     const discoveryBody = await discovery.json();
     expect(discoveryBody).toMatchObject({
       issuer: origin + "/api/auth",
+      jwks_uri: origin + "/api/auth/jwks.json",
       code_challenge_methods_supported: ["S256"],
       client_id_metadata_document_supported: true,
     });
@@ -232,6 +260,23 @@ it("reads InsideLink data with a resource-bound PKCE token and enforces revocati
       "list_links",
     ]);
 
+    const initialized = await legacyResult(
+      await callLegacy(
+        "initialize",
+        {
+          protocolVersion: "2025-11-25",
+          capabilities: {},
+          clientInfo: { name: "legacy-client", version: "1.0.0" },
+        },
+        accessToken,
+      ),
+    );
+    expect(initialized.protocolVersion).toBe("2025-11-25");
+    const legacyTools = await legacyResult(
+      await callLegacy("tools/list", {}, accessToken),
+    );
+    expect(legacyTools.tools).toEqual(tools);
+
     const read = (name: string, args: object) =>
       call("tools/call", { name, arguments: args }, accessToken);
     const detail = await read("get_link", { id: link.id });
@@ -288,6 +333,15 @@ it("reads InsideLink data with a resource-bound PKCE token and enforces revocati
     expect(limited.status).toBe(403);
     expect(limited.headers.get("www-authenticate")).toContain(
       "insufficient_scope",
+    );
+    const legacyLimitedTools = await legacyResult(
+      await callLegacy("tools/list", {}, readOnlyToken),
+    );
+    expect(legacyLimitedTools.tools).toContainEqual(
+      expect.objectContaining({ name: "list_links" }),
+    );
+    expect(legacyLimitedTools.tools).not.toContainEqual(
+      expect.objectContaining({ name: "get_link_analytics" }),
     );
 
     const [grant] = await database.select().from(schema.oauthConsent);

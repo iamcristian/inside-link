@@ -6,6 +6,7 @@ import {
   getMcpConsents,
   MCP_ANALYTICS_SCOPE,
   MCP_GRANTS_CLAIM,
+  MCP_JWKS_PATH,
   MCP_READ_SCOPE,
 } from "@/server/auth/mcp-policy";
 import { db } from "@/server/db";
@@ -62,7 +63,12 @@ export function createMcpPost(
       const handler = canReadAnalytics ? extendedTools : basicTools;
       return handler.fetch(request);
     },
-    { resource, requiredScopes: [MCP_READ_SCOPE] },
+    {
+      resource,
+      // The public proxy serves this file path without a trailing-slash redirect.
+      jwksUrl: new URL("/api/auth" + MCP_JWKS_PATH, origin).href,
+      requiredScopes: [MCP_READ_SCOPE],
+    },
   );
 
   return async (request: Request) => {

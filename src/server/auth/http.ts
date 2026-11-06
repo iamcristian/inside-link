@@ -15,8 +15,14 @@ export async function handleAuthPost(
   const body = await readRequestBody(request, 16 * 1024);
   if (body.tooLarge) return new Response(null, { status: 413 });
 
-  // Serialize issuance and refresh rotation with revocation after reading the body.
-  const tokenRequest = new Request(request, { body: body.text });
+  // Vercel can pass a wrapped Request that the native constructor cannot copy.
+  const tokenRequest = new Request(request.url, {
+    method: request.method,
+    headers: request.headers,
+    body: body.text,
+    signal: request.signal,
+  });
+  // Serialize issuance and refresh rotation with revocation.
   return database.transaction((transaction) =>
     createAuthInstance(transaction, resource).handler(tokenRequest),
   );

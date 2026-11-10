@@ -37,6 +37,8 @@ describe("Slug Normalization & Anti-Collision Engine", () => {
     expect(isReservedSlug("api")).toBe(true);
     expect(isReservedSlug("links")).toBe(true);
     expect(isReservedSlug("auth")).toBe(true);
+    expect(isReservedSlug("og")).toBe(true);
+    expect(isReservedSlug("404")).toBe(true);
   });
 
   it("blocks dangerous file extensions", () => {

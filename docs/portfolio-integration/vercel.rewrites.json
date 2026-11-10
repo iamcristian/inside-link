@@ -1,5 +1,4 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "trailingSlash": true,
   "headers": [
     {
@@ -23,7 +22,88 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self' https://inside-link.vercel.app; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://inside-link.vercel.app; style-src 'self' 'unsafe-inline' https://inside-link.vercel.app; font-src 'self' data: https://inside-link.vercel.app; img-src 'self' data: https:; frame-src https://giscus.app; connect-src 'self' https://vitals.vercel-insights.com https://inside-link.vercel.app; base-uri 'self'; object-src 'none'; frame-ancestors 'none';"
+          "value": "default-src 'self' https://inside-link.vercel.app; script-src 'self' https://va.vercel-scripts.com https://inside-link.vercel.app; style-src 'self' 'unsafe-inline' https://inside-link.vercel.app; font-src 'self' data: https://inside-link.vercel.app; img-src 'self' data: https:; frame-src https://giscus.app; connect-src 'self' https://vitals.vercel-insights.com https://inside-link.vercel.app; base-uri 'self'; object-src 'none'; frame-ancestors 'none';"
+        }
+      ]
+    },
+    {
+      "source": "/admin",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https://inside-link.vercel.app; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://inside-link.vercel.app; style-src 'self' 'unsafe-inline' https://inside-link.vercel.app; font-src 'self' data: https://inside-link.vercel.app; img-src 'self' data: blob: https:; frame-src https://giscus.app; connect-src 'self' https://vitals.vercel-insights.com https://inside-link.vercel.app; base-uri 'self'; object-src 'none'; frame-ancestors 'none';"
+        }
+      ]
+    },
+    {
+      "source": "/admin/",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https://inside-link.vercel.app; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://inside-link.vercel.app; style-src 'self' 'unsafe-inline' https://inside-link.vercel.app; font-src 'self' data: https://inside-link.vercel.app; img-src 'self' data: blob: https:; frame-src https://giscus.app; connect-src 'self' https://vitals.vercel-insights.com https://inside-link.vercel.app; base-uri 'self'; object-src 'none'; frame-ancestors 'none';"
+        }
+      ]
+    },
+    {
+      "source": "/admin/:path*",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https://inside-link.vercel.app; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://inside-link.vercel.app; style-src 'self' 'unsafe-inline' https://inside-link.vercel.app; font-src 'self' data: https://inside-link.vercel.app; img-src 'self' data: blob: https:; frame-src https://giscus.app; connect-src 'self' https://vitals.vercel-insights.com https://inside-link.vercel.app; base-uri 'self'; object-src 'none'; frame-ancestors 'none';"
+        }
+      ]
+    },
+    {
+      "source": "/login",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https://inside-link.vercel.app; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://inside-link.vercel.app; style-src 'self' 'unsafe-inline' https://inside-link.vercel.app; font-src 'self' data: https://inside-link.vercel.app; img-src 'self' data: blob: https:; frame-src https://giscus.app; connect-src 'self' https://vitals.vercel-insights.com https://inside-link.vercel.app; base-uri 'self'; object-src 'none'; frame-ancestors 'none';"
+        }
+      ]
+    },
+    {
+      "source": "/login/",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https://inside-link.vercel.app; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://inside-link.vercel.app; style-src 'self' 'unsafe-inline' https://inside-link.vercel.app; font-src 'self' data: https://inside-link.vercel.app; img-src 'self' data: blob: https:; frame-src https://giscus.app; connect-src 'self' https://vitals.vercel-insights.com https://inside-link.vercel.app; base-uri 'self'; object-src 'none'; frame-ancestors 'none';"
+        }
+      ]
+    },
+    {
+      "source": "/links",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https://inside-link.vercel.app; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://inside-link.vercel.app; style-src 'self' 'unsafe-inline' https://inside-link.vercel.app; font-src 'self' data: https://inside-link.vercel.app; img-src 'self' data: blob: https:; frame-src https://giscus.app; connect-src 'self' https://vitals.vercel-insights.com https://inside-link.vercel.app; base-uri 'self'; object-src 'none'; frame-ancestors 'none';"
+        }
+      ]
+    },
+    {
+      "source": "/links/",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https://inside-link.vercel.app; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://inside-link.vercel.app; style-src 'self' 'unsafe-inline' https://inside-link.vercel.app; font-src 'self' data: https://inside-link.vercel.app; img-src 'self' data: blob: https:; frame-src https://giscus.app; connect-src 'self' https://vitals.vercel-insights.com https://inside-link.vercel.app; base-uri 'self'; object-src 'none'; frame-ancestors 'none';"
+        }
+      ]
+    },
+    {
+      "source": "/:slug((?!es$|en$|de$|ru$|ja$|og$|404$|projects$|uses$|cv$|blog$|bookshelf$|library$|search$|series$|search-index$|news-sitemap$|rss$|about$|contact$|_astro$|_next$|assets$|images$|fonts$|icons$|brand$)[a-z0-9][a-z0-9-_]{2,99})",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https://inside-link.vercel.app; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://inside-link.vercel.app; style-src 'self' 'unsafe-inline' https://inside-link.vercel.app; font-src 'self' data: https://inside-link.vercel.app; img-src 'self' data: blob: https:; frame-src https://giscus.app; connect-src 'self' https://vitals.vercel-insights.com https://inside-link.vercel.app; base-uri 'self'; object-src 'none'; frame-ancestors 'none';"
+        }
+      ]
+    },
+    {
+      "source": "/:slug((?!es$|en$|de$|ru$|ja$|og$|404$|projects$|uses$|cv$|blog$|bookshelf$|library$|search$|series$|search-index$|news-sitemap$|rss$|about$|contact$|_astro$|_next$|assets$|images$|fonts$|icons$|brand$)[a-z0-9][a-z0-9-_]{2,99})/",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https://inside-link.vercel.app; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://inside-link.vercel.app; style-src 'self' 'unsafe-inline' https://inside-link.vercel.app; font-src 'self' data: https://inside-link.vercel.app; img-src 'self' data: blob: https:; frame-src https://giscus.app; connect-src 'self' https://vitals.vercel-insights.com https://inside-link.vercel.app; base-uri 'self'; object-src 'none'; frame-ancestors 'none';"
         }
       ]
     },
@@ -46,6 +126,14 @@
   ],
   "rewrites": [
     {
+      "source": "/_next/:path*",
+      "destination": "https://inside-link.vercel.app/_next/:path*"
+    },
+    {
+      "source": "/_next/:path*/",
+      "destination": "https://inside-link.vercel.app/_next/:path*"
+    },
+    {
       "source": "/admin",
       "destination": "https://inside-link.vercel.app/admin"
     },
@@ -55,6 +143,10 @@
     },
     {
       "source": "/admin/:path*",
+      "destination": "https://inside-link.vercel.app/admin/:path*"
+    },
+    {
+      "source": "/admin/:path*/",
       "destination": "https://inside-link.vercel.app/admin/:path*"
     },
     {
@@ -78,15 +170,23 @@
       "destination": "https://inside-link.vercel.app/api/auth/:path*"
     },
     {
+      "source": "/api/auth/:path*/",
+      "destination": "https://inside-link.vercel.app/api/auth/:path*"
+    },
+    {
       "source": "/api/v1/:path*",
       "destination": "https://inside-link.vercel.app/api/v1/:path*"
     },
     {
-      "source": "/:slug((?!es$|en$|de$|ru$|ja$|projects$|uses$|cv$|blog$|bookshelf$|library$|search$|series$|search-index$|news-sitemap$|rss$|about$|contact$|_astro$|_next$|assets$|images$|fonts$|icons$|brand$)[a-z0-9][a-z0-9-_]{2,99})",
+      "source": "/api/v1/:path*/",
+      "destination": "https://inside-link.vercel.app/api/v1/:path*"
+    },
+    {
+      "source": "/:slug((?!es$|en$|de$|ru$|ja$|og$|404$|projects$|uses$|cv$|blog$|bookshelf$|library$|search$|series$|search-index$|news-sitemap$|rss$|about$|contact$|_astro$|_next$|assets$|images$|fonts$|icons$|brand$)[a-z0-9][a-z0-9-_]{2,99})",
       "destination": "https://inside-link.vercel.app/:slug"
     },
     {
-      "source": "/:slug((?!es$|en$|de$|ru$|ja$|projects$|uses$|cv$|blog$|bookshelf$|library$|search$|series$|search-index$|news-sitemap$|rss$|about$|contact$|_astro$|_next$|assets$|images$|fonts$|icons$|brand$)[a-z0-9][a-z0-9-_]{2,99})/",
+      "source": "/:slug((?!es$|en$|de$|ru$|ja$|og$|404$|projects$|uses$|cv$|blog$|bookshelf$|library$|search$|series$|search-index$|news-sitemap$|rss$|about$|contact$|_astro$|_next$|assets$|images$|fonts$|icons$|brand$)[a-z0-9][a-z0-9-_]{2,99})/",
       "destination": "https://inside-link.vercel.app/:slug"
     }
   ]

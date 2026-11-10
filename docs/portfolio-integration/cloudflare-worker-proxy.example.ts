@@ -12,6 +12,8 @@ const PORTFOLIO_RESERVED_PREFIXES = new Set([
   "de",
   "ru",
   "ja",
+  "og",
+  "404",
   "projects",
   "uses",
   "cv",

@@ -11,7 +11,7 @@ export const RESERVED_SLUGS = new Set([
   "api", "auth", "links", "hub", "unlock", "qr", "analytics", "settings",
   // 4. Rutas técnicas, frameworks y archivos raíz
   "_next", "_astro", "_il", "_vercel", "assets", "public", "static",
-  "images", "fonts", "brand", "favicon", "robots", "sitemap", "manifest",
+  "images", "fonts", "brand", "og", "favicon", "robots", "sitemap", "manifest",
   "404", "500", "error", "health", "ping"
 ]);
 

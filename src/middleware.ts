@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * slugs de un solo segmento (>= 3 caracteres, sin puntos ni rutas del portafolio).
  */
 export const PORTFOLIO_SLUG_REWRITE_REGEX =
-  /^\/(?!(?:es|en|de|ru|ja|projects|uses|cv|blog|bookshelf|library|search|series|search-index|news-sitemap|rss|about|contact|_astro|_next|assets|images|fonts|icons|brand)$)([a-z0-9][a-z0-9-_]{2,99})\/?$/;
+  /^\/(?!(?:es|en|de|ru|ja|og|404|projects|uses|cv|blog|bookshelf|library|search|series|search-index|news-sitemap|rss|about|contact|_astro|_next|assets|images|fonts|icons|brand)$)([a-z0-9][a-z0-9-_]{2,99})\/?$/;
 
 export function matchesPortfolioRewrite(pathname: string): boolean {
   if (

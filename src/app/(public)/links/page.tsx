@@ -3,22 +3,69 @@ import type { Metadata } from "next";
 import { ArrowUpRight, Globe } from "lucide-react";
 import { PublicLinkDirectory } from "@/components/public-links/public-link-directory";
 import { linkService } from "@/server/services";
-import { getPortfolioBaseUrl } from "@/server/services/og-render.service";
+import { getCanonicalBaseUrl, getPortfolioBaseUrl } from "@/server/services/og-render.service";
 
 export const dynamic = "force-dynamic";
 
+const PAGE_TITLE = "Official Links & Projects — Cristian Arando";
+const PAGE_DESCRIPTION =
+  "Public directory of software projects, repositories, social profiles, and technical resources by Cristian Arando (cristianarando.dev).";
+
 export const metadata: Metadata = {
-  title: "Official Links & Projects — Cristian Arando",
-  description:
-    "Public directory of software projects, repositories, social profiles, and technical resources by Cristian Arando (cristianarando.dev).",
+  title: PAGE_TITLE,
+  description: PAGE_DESCRIPTION,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "links.cristianarando.dev",
+    title: PAGE_TITLE,
+    description: PAGE_DESCRIPTION,
+    images: [
+      {
+        url: "/api/v1/og/default/image.png",
+        width: 1200,
+        height: 630,
+        alt: PAGE_TITLE,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: PAGE_TITLE,
+    description: PAGE_DESCRIPTION,
+    images: ["/api/v1/og/default/image.png"],
+  },
 };
 
 export default async function PublicLinksPage() {
   const initialPage = await linkService.listPublicLinks({ limit: 12 });
   const portfolioUrl = getPortfolioBaseUrl();
+  const canonicalUrl = getCanonicalBaseUrl();
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: PAGE_TITLE,
+    description: PAGE_DESCRIPTION,
+    url: canonicalUrl,
+    author: {
+      "@type": "Person",
+      name: "Cristian Arando",
+      url: portfolioUrl,
+    },
+  };
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:py-16">
         <header className="mb-10 flex flex-col justify-between gap-4 border-b border-zinc-800/80 pb-8 sm:flex-row sm:items-end">
           <div className="space-y-2">

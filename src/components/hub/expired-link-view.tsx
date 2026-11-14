@@ -46,6 +46,7 @@ export function renderExpiredLinkHtml(params: {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/brand/logo-qr.svg" type="image/svg+xml" />
   <title>${escapeHtml(copy.heading)} — links.cristianarando.dev</title>
   <style>
     body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#09090b;color:#fafafa;font-family:system-ui,-apple-system,sans-serif;padding:16px}

@@ -43,6 +43,7 @@ export function renderHubLandingHtml(link: LinkDTO): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="/brand/logo-qr.svg" type="image/svg+xml" />
   <title>${title} — links.cristianarando.dev</title>
   <meta name="description" content="${description}" />
   ${renderOgMetaTags(link)}

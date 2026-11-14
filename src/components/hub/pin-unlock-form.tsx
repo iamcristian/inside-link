@@ -23,6 +23,7 @@ export function renderPinUnlockHtml(input: PinUnlockRenderInput): string {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/brand/logo-qr.svg" type="image/svg+xml" />
   <title>${title} (PIN Protected) — links.cristianarando.dev</title>
   <style>
     *{box-sizing:border-box}

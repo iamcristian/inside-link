@@ -13,7 +13,7 @@ const serverSchema = z.object({
 });
 
 const clientSchema = z.object({
-  NEXT_PUBLIC_CANONICAL_URL: z.string().url("NEXT_PUBLIC_CANONICAL_URL debe ser una URL válida").default("https://cristianarando.dev"),
+  NEXT_PUBLIC_CANONICAL_URL: z.string().url("NEXT_PUBLIC_CANONICAL_URL debe ser una URL válida").default("https://links.cristianarando.dev"),
   NEXT_PUBLIC_ASSET_PREFIX: z.string().optional(),
 });
 

@@ -16,14 +16,14 @@ export interface QrBundle {
 }
 
 /**
- * Construye siempre el URL corto canónico (`https://cristianarando.dev/[slug]`),
+ * Construye siempre el URL corto canónico (`https://links.cristianarando.dev/[slug]`),
  * ignorando cualquier host técnico `.vercel.app` (RNF-009 / RF-017).
  */
 export function buildCanonicalQrTargetUrl(slug: string, canonicalBaseUrl?: string): string {
   const base = (
     canonicalBaseUrl ||
     process.env.NEXT_PUBLIC_CANONICAL_URL ||
-    "https://cristianarando.dev"
+    "https://links.cristianarando.dev"
   ).replace(/\/+$/, "");
   const cleanSlug = slug.trim().replace(/^\/+/, "").toLowerCase();
   return `${base}/${cleanSlug}`;

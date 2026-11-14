@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "InsideLink — cristianarando.dev",
+  title: "InsideLink — links.cristianarando.dev",
   description: "URL Shortener, Project Micro-Landings & Public Link Directory",
 };
 

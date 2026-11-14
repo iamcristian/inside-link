@@ -23,7 +23,7 @@ export const SlugSchema = z
   )
   .refine(
     (raw) => !isReservedSlug(raw),
-    "El slug coincide con una ruta reservada del sistema o del portafolio"
+    "El slug coincide con una ruta reservada del sistema"
   )
   .transform((val) => normalizeSlug(val))
   .pipe(
@@ -41,7 +41,7 @@ export const SlugSchema = z
       )
       .refine(
         (val) => !isReservedSlug(val),
-        "El slug coincide con una ruta reservada del sistema o del portafolio"
+        "El slug coincide con una ruta reservada del sistema"
       )
   );
 
@@ -63,7 +63,7 @@ export function classifySlug(raw: string): SlugClassification {
       ok: false,
       normalized,
       reason: "RESERVED",
-      message: "El slug coincide con una ruta reservada del sistema o del portafolio",
+      message: "El slug coincide con una ruta reservada del sistema",
     };
   }
 

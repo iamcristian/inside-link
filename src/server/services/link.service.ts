@@ -84,7 +84,7 @@ const HubLinksSchema = z.array(HubLinkItemSchema);
 const nextId = monotonicFactory();
 
 function canonicalBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_CANONICAL_URL || "https://cristianarando.dev").replace(/\/+$/, "");
+  return (process.env.NEXT_PUBLIC_CANONICAL_URL || "https://links.cristianarando.dev").replace(/\/+$/, "");
 }
 
 function zodDetails(error: z.ZodError): Record<string, string[]> {

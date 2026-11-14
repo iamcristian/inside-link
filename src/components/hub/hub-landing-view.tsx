@@ -1,9 +1,9 @@
 import React from "react";
 import type { LinkDTO } from "@/lib/types/link-dto";
-import { escapeHtml, getCanonicalBaseUrl, renderOgMetaTags } from "@/server/services/og-render.service";
+import { escapeHtml, getPortfolioBaseUrl, renderOgMetaTags } from "@/server/services/og-render.service";
 
 export function renderHubLandingHtml(link: LinkDTO): string {
-  const baseUrl = escapeHtml(getCanonicalBaseUrl());
+  const baseUrl = escapeHtml(getPortfolioBaseUrl());
   const title = escapeHtml(link.title);
   const description = escapeHtml(
     link.description || "Official project links and resources."
@@ -43,7 +43,7 @@ export function renderHubLandingHtml(link: LinkDTO): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${title} — cristianarando.dev</title>
+  <title>${title} — links.cristianarando.dev</title>
   <meta name="description" content="${description}" />
   ${renderOgMetaTags(link)}
   <style>
@@ -78,7 +78,7 @@ export function renderHubLandingHtml(link: LinkDTO): string {
     </div>
     <footer>
       <a href="${baseUrl}">cristianarando.dev</a>
-      <a href="/links">Browse all links →</a>
+      <a href="/">Browse all links →</a>
     </footer>
   </main>
   <script>
@@ -108,7 +108,7 @@ export function renderHubLandingHtml(link: LinkDTO): string {
 }
 
 export function HubLandingView({ link }: { link: LinkDTO }) {
-  const baseUrl = getCanonicalBaseUrl();
+  const baseUrl = getPortfolioBaseUrl();
 
   const handleSubLinkClick = (subLinkId: string) => {
     const url = `/api/v1/slug/${encodeURIComponent(link.slug)}/hub-click`;
@@ -169,7 +169,7 @@ export function HubLandingView({ link }: { link: LinkDTO }) {
           <a href={baseUrl} className="hover:text-zinc-300">
             cristianarando.dev
           </a>
-          <a href="/links" className="hover:text-zinc-300">
+          <a href="/" className="hover:text-zinc-300">
             Browse all links →
           </a>
         </footer>

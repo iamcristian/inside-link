@@ -107,7 +107,7 @@ export function renderOgImage(
               gap: 3,
             }}
           >
-            <span>cristianarando.dev</span>
+            <span>links.cristianarando.dev</span>
             {card.slug && <span style={{ fontSize: 17 }}>{card.slug}</span>}
           </div>
         </div>

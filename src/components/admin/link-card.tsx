@@ -96,7 +96,7 @@ export function LinkCard({
                   className="inline-flex cursor-pointer items-center gap-1 font-mono text-xs text-zinc-300 hover:text-white"
                 >
                   <span className="truncate">
-                    cristianarando.dev/{link.slug}
+                    links.cristianarando.dev/{link.slug}
                   </span>
                   {copied ? (
                     <Check className="h-3.5 w-3.5 text-emerald-400" />

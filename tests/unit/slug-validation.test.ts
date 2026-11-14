@@ -10,24 +10,22 @@ describe("Slug Normalization & Anti-Collision Engine", () => {
     expect(normalizeSlug("--inicio--")).toBe("inicio");
   });
 
-  it("identifies reserved language routes", () => {
-    expect(isReservedSlug("es")).toBe(true);
-    expect(isReservedSlug("en")).toBe(true);
-    expect(isReservedSlug("de")).toBe(true);
-    expect(isReservedSlug("ru")).toBe(true);
-    expect(isReservedSlug("ja")).toBe(true);
-    expect(isReservedSlug("fr")).toBe(true);
-    expect(isReservedSlug("pt")).toBe(true);
-  });
+  it("allows former portfolio and ISO language slugs when they meet slug length rules", () => {
+    expect(isReservedSlug("es")).toBe(false);
+    expect(isReservedSlug("en")).toBe(false);
+    expect(isReservedSlug("cv")).toBe(false);
+    expect(isReservedSlug("uses")).toBe(false);
+    expect(isReservedSlug("resume")).toBe(false);
+    expect(isReservedSlug("projects")).toBe(false);
+    expect(isReservedSlug("blog")).toBe(false);
+    expect(isReservedSlug("about")).toBe(false);
+    expect(isReservedSlug("contact")).toBe(false);
 
-  it("identifies reserved portfolio routes", () => {
-    expect(isReservedSlug("uses")).toBe(true);
-    expect(isReservedSlug("cv")).toBe(true);
-    expect(isReservedSlug("resume")).toBe(true);
-    expect(isReservedSlug("projects")).toBe(true);
-    expect(isReservedSlug("blog")).toBe(true);
-    expect(isReservedSlug("about")).toBe(true);
-    expect(isReservedSlug("contact")).toBe(true);
+    expect(SlugSchema.safeParse("uses").success).toBe(true);
+    expect(SlugSchema.safeParse("projects").success).toBe(true);
+    expect(SlugSchema.safeParse("blog").success).toBe(true);
+    expect(SlugSchema.safeParse("about").success).toBe(true);
+    expect(SlugSchema.safeParse("resume").success).toBe(true);
   });
 
   it("identifies reserved system routes", () => {
@@ -49,12 +47,11 @@ describe("Slug Normalization & Anti-Collision Engine", () => {
     expect(isReservedSlug("style.css")).toBe(true);
   });
 
-  it("rejects reserved slugs via SlugSchema", () => {
+  it("rejects reserved system slugs via SlugSchema", () => {
     expect(SlugSchema.safeParse("admin").success).toBe(false);
-    expect(SlugSchema.safeParse("uses").success).toBe(false);
-    expect(SlugSchema.safeParse("projects").success).toBe(false);
-    expect(SlugSchema.safeParse("es").success).toBe(false);
-    expect(SlugSchema.safeParse("cv").success).toBe(false);
+    expect(SlugSchema.safeParse("login").success).toBe(false);
+    expect(SlugSchema.safeParse("links").success).toBe(false);
+    expect(SlugSchema.safeParse("dashboard").success).toBe(false);
   });
 
   it("rejects file-like slugs before normalization strips the dot", () => {

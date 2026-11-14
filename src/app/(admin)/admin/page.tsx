@@ -14,7 +14,7 @@ export default async function AdminDashboardPage() {
           Links & Micro-Landings Manager
         </h1>
         <p className="text-xs text-zinc-400">
-          Manage direct redirects, project HUB pages, and public visibility on cristianarando.dev/links.
+          Manage direct redirects, project HUB pages, and public visibility on links.cristianarando.dev.
         </p>
       </div>
 

@@ -124,12 +124,12 @@ describe("Admin Links API Route Handlers (/api/v1/links/*)", () => {
 
     // 2. Intentar crear con ruta reservada -> 422 SLUG_RESERVED
     const reservedRes = await handleCreateLinkPost(
-      new Request("https://cristianarando.dev/api/v1/links", {
+      new Request("https://links.cristianarando.dev/api/v1/links", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          slug: "uses",
-          title: "Uses",
+          slug: "admin",
+          title: "Admin",
           destinationUrl: "https://example.com",
         }),
       }),

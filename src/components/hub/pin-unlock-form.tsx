@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { escapeHtml, getCanonicalBaseUrl } from "@/server/services/og-render.service";
+import { escapeHtml, getPortfolioBaseUrl } from "@/server/services/og-render.service";
 
 export interface PinUnlockRenderInput {
   slug: string;
@@ -10,7 +10,7 @@ export interface PinUnlockRenderInput {
 }
 
 export function renderPinUnlockHtml(input: PinUnlockRenderInput): string {
-  const baseUrl = escapeHtml(getCanonicalBaseUrl());
+  const baseUrl = escapeHtml(getPortfolioBaseUrl());
   const slug = escapeHtml(input.slug);
   const title = escapeHtml(input.title);
   const description = escapeHtml(
@@ -23,7 +23,7 @@ export function renderPinUnlockHtml(input: PinUnlockRenderInput): string {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>${title} (PIN Protected) — cristianarando.dev</title>
+  <title>${title} (PIN Protected) — links.cristianarando.dev</title>
   <style>
     *{box-sizing:border-box}
     body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#09090b;color:#fafafa;font-family:system-ui,-apple-system,sans-serif;padding:16px}

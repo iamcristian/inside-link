@@ -25,7 +25,7 @@ export default async function AdminLayout({
               </span>
               <span>InsideLink</span>
               <span className="rounded-md border border-zinc-800 bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
-                cristianarando.dev
+                links.cristianarando.dev
               </span>
             </a>
 
@@ -44,12 +44,12 @@ export default async function AdminLayout({
                 Analytics
               </a>
               <a
-                href="/links"
+                href="/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white"
               >
-                Public /links
+                Public Directory
                 <ExternalLink className="h-3 w-3" />
               </a>
             </nav>

@@ -30,7 +30,7 @@ export default function LoginForm() {
         typeof window !== "undefined" &&
         window.location.hostname.endsWith(".vercel.app")
       ) {
-        window.location.href = "https://www.cristianarando.dev/login/";
+        window.location.href = "https://links.cristianarando.dev/login";
         return;
       }
       await authClient.signIn.social({
@@ -58,7 +58,7 @@ export default function LoginForm() {
             InsideLink Admin
           </h1>
           <p className="mt-2 text-xs text-zinc-400">
-            Private link management console for cristianarando.dev
+            Private link management console for links.cristianarando.dev
           </p>
         </div>
 

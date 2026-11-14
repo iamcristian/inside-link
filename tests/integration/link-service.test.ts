@@ -54,7 +54,7 @@ describe("LinkService — CRUD & slug rules", () => {
   it("creates a DIRECT link, normalizing the slug and returning a safe DTO", async () => {
     const link = await ctx.service.createLink(direct("  Mi Guía Turística  "));
     expect(link.slug).toBe("mi-guia-turistica");
-    expect(link.shortUrl).toBe("https://cristianarando.dev/mi-guia-turistica");
+    expect(link.shortUrl).toBe("https://links.cristianarando.dev/mi-guia-turistica");
     expect(link.type).toBe("DIRECT");
     expect(link.redirectStatus).toBe(307);
     expect(link.hasPin).toBe(false);
@@ -62,10 +62,10 @@ describe("LinkService — CRUD & slug rules", () => {
     expect(link.id).toMatch(/^[0-9A-HJKMNP-TV-Z]{26}$/);
   });
 
-  it("rejects reserved slugs with SLUG_RESERVED (incl. file-like slugs)", async () => {
+  it("rejects reserved system slugs with SLUG_RESERVED (incl. file-like slugs)", async () => {
     await expectServiceError(ctx.service.createLink(direct("admin")), "SLUG_RESERVED");
-    await expectServiceError(ctx.service.createLink(direct("cv")), "SLUG_RESERVED");
-    await expectServiceError(ctx.service.createLink(direct("es")), "SLUG_RESERVED");
+    await expectServiceError(ctx.service.createLink(direct("login")), "SLUG_RESERVED");
+    await expectServiceError(ctx.service.createLink(direct("links")), "SLUG_RESERVED");
     await expectServiceError(ctx.service.createLink(direct("favicon.ico")), "SLUG_RESERVED");
   });
 
@@ -159,7 +159,11 @@ describe("LinkService — CRUD & slug rules", () => {
     });
     expect(await ctx.service.checkSlugAvailability("Ocupado")).toMatchObject({ available: false, reason: "TAKEN" });
     expect(await ctx.service.checkSlugAvailability("ocupado", link.id)).toMatchObject({ available: true });
-    expect(await ctx.service.checkSlugAvailability("uses")).toMatchObject({ available: false, reason: "RESERVED" });
+    expect(await ctx.service.checkSlugAvailability("uses")).toMatchObject({
+      available: true,
+      normalizedSlug: "uses",
+    });
+    expect(await ctx.service.checkSlugAvailability("admin")).toMatchObject({ available: false, reason: "RESERVED" });
     expect(await ctx.service.checkSlugAvailability("my.page")).toMatchObject({ available: false, reason: "INVALID" });
   });
 });

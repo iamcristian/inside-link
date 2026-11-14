@@ -220,7 +220,7 @@ export function InfiniteLinkGrid({
       showToast(`Changes saved to /${saved.slug}`);
     } else {
       setItems((prev) => sortLinksByKeyset([saved, ...prev]));
-      showToast(`Link created: cristianarando.dev/${saved.slug}`);
+      showToast(`Link created: links.cristianarando.dev/${saved.slug}`);
     }
   };
 

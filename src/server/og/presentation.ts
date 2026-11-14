@@ -40,7 +40,7 @@ export function buildOgPresentation(link?: OgLink) {
   return {
     title: clip(link.title, 76),
     description: clip(
-      link.description || "Official link on cristianarando.dev.",
+      link.description || "Official link on links.cristianarando.dev.",
       128,
     ),
     label: link.type === "HUB" ? "PROJECT HUB" : link.category.toUpperCase(),
@@ -59,7 +59,13 @@ export function ogRevision(presentation: OgPresentation): string {
 
 export function getCanonicalBaseUrl(): string {
   return (
-    process.env.NEXT_PUBLIC_CANONICAL_URL || "https://cristianarando.dev"
+    process.env.NEXT_PUBLIC_CANONICAL_URL || "https://links.cristianarando.dev"
+  ).replace(/\/+$/, "");
+}
+
+export function getPortfolioBaseUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_PORTFOLIO_URL || "https://cristianarando.dev"
   ).replace(/\/+$/, "");
 }
 

@@ -1,6 +1,6 @@
 import React from "react";
 import type { InactiveReason } from "@/server/services/resolution.service";
-import { escapeHtml, getCanonicalBaseUrl } from "@/server/services/og-render.service";
+import { escapeHtml, getPortfolioBaseUrl } from "@/server/services/og-render.service";
 
 export interface ExpiredLinkCopy {
   badge: string;
@@ -38,7 +38,7 @@ export function renderExpiredLinkHtml(params: {
   title?: string;
 }): string {
   const copy = getExpiredLinkCopy(params.reason);
-  const baseUrl = escapeHtml(getCanonicalBaseUrl());
+  const baseUrl = escapeHtml(getPortfolioBaseUrl());
 
   return `<!DOCTYPE html>
 <html lang="en" class="dark">
@@ -46,7 +46,7 @@ export function renderExpiredLinkHtml(params: {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>${escapeHtml(copy.heading)} — cristianarando.dev</title>
+  <title>${escapeHtml(copy.heading)} — links.cristianarando.dev</title>
   <style>
     body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#09090b;color:#fafafa;font-family:system-ui,-apple-system,sans-serif;padding:16px}
     .card{max-width:440px;width:100%;border:1px solid #27272a;background:rgba(24,24,27,.85);border-radius:18px;padding:32px;text-align:center;box-shadow:0 24px 48px rgba(0,0,0,.5)}
@@ -68,7 +68,7 @@ export function renderExpiredLinkHtml(params: {
     <p>${escapeHtml(copy.message)}</p>
     <div class="actions">
       <a class="btn primary" href="${baseUrl}">Go to cristianarando.dev</a>
-      <a class="btn secondary" href="/links">Browse /links</a>
+      <a class="btn secondary" href="/">Browse public links</a>
     </div>
   </main>
 </body>
@@ -83,7 +83,7 @@ export function ExpiredLinkView({
   slug: string;
 }) {
   const copy = getExpiredLinkCopy(reason);
-  const baseUrl = getCanonicalBaseUrl();
+  const baseUrl = getPortfolioBaseUrl();
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-950 px-4 text-zinc-50">
@@ -102,10 +102,10 @@ export function ExpiredLinkView({
             Go to cristianarando.dev
           </a>
           <a
-            href="/links"
+            href="/"
             className="inline-flex items-center rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-zinc-200 hover:bg-zinc-800"
           >
-            Browse /links
+            Browse public links
           </a>
         </div>
       </div>

@@ -183,7 +183,7 @@ export function PublicLinkDirectory({ initialPage }: PublicLinkDirectoryProps) {
                           ) : null}
                         </div>
                         <p className="font-mono text-xs text-zinc-500">
-                          cristianarando.dev/{item.slug}
+                          links.cristianarando.dev/{item.slug}
                         </p>
                       </div>
                     </div>

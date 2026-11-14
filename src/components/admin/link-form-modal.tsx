@@ -321,7 +321,7 @@ export function LinkFormModal({
       open={open}
       onClose={onClose}
       title={isEdit ? `Edit /${initialLink?.slug}` : "Create New Short Link"}
-      description="Configure a direct redirect or a project HUB micro-landing with anti-collision protection for cristianarando.dev."
+      description="Configure a direct redirect or a project HUB micro-landing for links.cristianarando.dev."
       maxWidthClass="max-w-2xl"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -351,7 +351,7 @@ export function LinkFormModal({
           </div>
           <div className="mt-1.5 flex items-center rounded-xl border border-zinc-800 bg-zinc-900/80 px-3">
             <span className="select-none font-mono text-xs text-zinc-500">
-              cristianarando.dev/
+              links.cristianarando.dev/
             </span>
             <input
               type="text"
@@ -374,7 +374,7 @@ export function LinkFormModal({
               <CheckCircle2 className="h-3.5 w-3.5" />
               Available:{" "}
               <code className="font-mono">
-                cristianarando.dev/{slugStatus.normalized}
+                links.cristianarando.dev/{slugStatus.normalized}
               </code>
             </p>
           )}
